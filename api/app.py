@@ -1,15 +1,78 @@
 # Importamos Flask
-from flask import Flask
+from flask import Flask, request
+# Importamos MySQL de Flask
+from flask_mysqldb import MySQL
+
+#Importamos fichero con funciones de ayuda
+from asset.funciones import *
 
 # Importamos fichero config de la bd
 from config import config
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return 'hola mundo'
- 
+# Creamos variable con la conexión a la BBDD   
+conex = MySQL(app)
+
+# # # # # # # # END-POINT # # # # # # # #
+# LOGIN USUARIOS
+@app.route('/login')
+def login():
+    mail = request.headers.get('mail')
+    psw = request.headers.get('psw')
+
+    # Comporbamos que se pasan estos argumentos para loguear
+    if (mail == None or psw == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f'Argumentos requeridos: mail, psw')
+        })
+    
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f'Problema al conectar a la BD')
+        })
+    
+    # Consultamos el usuario
+    sql = """SELECT idUsuario
+             FROM usuario
+             WHERE mail = %s AND psw = %s;""", (mail, psw)
+    cursor.execute(sql) # Ejecutamos la consulta
+    res = cursor.fetchall() # Guardamos los resultados
+    cursor.close() # Cerramos la conexión
+
+    if len(res) == 0:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'NO OK'
+        })
+    else:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK'
+        })
+
+
+@app.route('/productos')
+def listarProductos():
+    try:
+        cursor = conex.connection.cursor() # Creamos un cursor para la consulta
+        sql = "SELECT idProducto, nombre, precio, descripcion FROM productos" # Consulta SQL
+        cursor.execute(sql) # Ejecutamos la consulta SQL
+        datos = cursor.fetchall() # Convierte los resultados y los guarda
+        print(datos)
+        return "Productos listados"
+    except Exception as ex:
+        return "Error"
+    
+# # # # # FUNCIÓN PAG NO ENCONTRADA # # # # #
+def paginaNoEncontrada(error):
+    return "<h1>La página que intentas buscar no existe</h1>"
+
 if __name__ == '__main__':
-    app.config.from_object(config['development'])
-    app.run()
+    app.config.from_object(config['development']) # Cargamos la configuración de nuestra BBDD en la app
+    app.register_error_handler(404, paginaNoEncontrada) # Controlamos el error de página no encontrada
+    app.run() # Lanzamos la api
