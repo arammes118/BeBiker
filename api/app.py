@@ -34,11 +34,12 @@ def login():
         return respuesta({
             'estado': ERR_NO_CONNECT_BD,
             'mensaje': (f'Problema al conectar a la BD')
+            
         })
     
     # Consultamos el usuario
     sql = """SELECT idUsuario
-             FROM usuario
+             FROM usuarios
              WHERE mail = %s AND psw = %s;""", (mail, psw)
     cursor.execute(sql) # Ejecutamos la consulta
     res = cursor.fetchall() # Guardamos los resultados
