@@ -86,7 +86,7 @@ def listarProductos():
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA CREAR PRODUCTOS
-@app.route('/productos', methods=['POST'])
+@app.route('/productos/ins', methods=['POST'])
 def insertarProducto():
     # JSON con los datos
     mJson = request.json
@@ -133,6 +133,48 @@ def insertarProducto():
     except:
         return jsonify({'mensaje': 'NO'})
 
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA BORRAR PRODUCTOS
+@app.route('/productos/del', methods=['POST'])
+def bor():
+     # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"JSON requerido")
+        })
+
+    if ('id' not in mJson): # se necesita este dato para la consulta
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"Datos requeridos: id")
+        })
+    
+    try:
+        id = int(mJson['id'])
+    except:
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"Datos erróneos: id")
+        })
+    
+    # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    try:
+        cursor.execute(f"DELETE FROM productos WHERE idProducto = {id}")
+        cursor.close()
+        return jsonify({'mensaje': 'OK'})
+    except:
+        return jsonify({'mensaje': 'NO'})
 
 # # # # # FUNCIÓN PAG NO ENCONTRADA # # # # #
 def paginaNoEncontrada(error):
