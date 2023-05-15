@@ -1,5 +1,5 @@
 # Importamos Flask
-from flask import Flask, request
+from flask import Flask, request, jsonify
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
 
@@ -56,19 +56,84 @@ def login():
             'mensaje': 'OK'
         })
 
-
-@app.route('/productos')
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA LISTAR PRODUCTOS
+@app.route('/productos', methods=['GET'])
 def listarProductos():
     try:
         cursor = conex.connection.cursor() # Creamos un cursor para la consulta
-        sql = "SELECT idProducto, nombre, precio, descripcion FROM productos" # Consulta SQL
-        cursor.execute(sql) # Ejecutamos la consulta SQL
-        datos = cursor.fetchall() # Convierte los resultados y los guarda
-        print(datos)
-        return "Productos listados"
-    except Exception as ex:
-        return "Error"
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
     
+    sql = "SELECT idProducto, nombre, precio, descripcion FROM productos" # Consulta SQL
+    cursor.execute(sql) # Ejecutamos la consulta SQL
+    datos = cursor.fetchall() # Convierte los resultados y los guarda
+
+    # Lista que almacena los produsctos
+    productos = []
+    for fila in datos:
+        producto = {
+            'idProducto': fila[0],
+            'nombre': fila[1],
+            'precio': fila[2],
+            'descripcion': fila[3]
+        }
+        productos.append(producto)
+    return jsonify(productos)
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA CREAR PRODUCTOS
+@app.route('/productos', methods=['POST'])
+def insertarProducto():
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"JSON requerido")
+        })
+    
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('nombre' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: nombre")
+        })
+    if ('precio' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: precio")
+        })
+    if ('descripcion' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: descripcion")
+        })
+
+    # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    try:
+        # Consulta SQL
+        cursor.execute("""INSERT INTO productos (nombre, precio, descripcion) 
+                VALUES ('{0}', '{1}', '{2}')"""
+                .format(mJson['nombre'], mJson['precio'], mJson['descripcion']))
+        conex.connection.commit() # Confirma la accion de inserción
+
+        return jsonify({'mensaje': 'OK'})
+    except:
+        return jsonify({'mensaje': 'NO'})
+
+
 # # # # # FUNCIÓN PAG NO ENCONTRADA # # # # #
 def paginaNoEncontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>"
