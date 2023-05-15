@@ -28,7 +28,7 @@ const Login = () => {
         if (mail === '' || !regMail.test(mail)) {
             setError("Introduce un correo electrónico válido")
         } else {
-            let res = await peticion('/login', {
+            let res = await peticion('/', {
                 headers: {
                     mail: mail,
                     psw: psw
@@ -49,6 +49,13 @@ const Login = () => {
                     ref={rMail}
                     value={mail}
                     onChange={() => setMail(rMail.current.value)} />
+                <input 
+                    type='password'
+                    placeholder='Contraseña'
+                    ref={rPsw}
+                    value={psw}
+                    onChange={() => setPsw(rPsw.current.value)} />
+                <button type="submit">Entrar</button>
             </form>
         </div>
 
