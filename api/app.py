@@ -46,7 +46,7 @@ def login():
     if (mail == None or psw == None):
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: Auth (mail, psw)')
+            'mensaje': (f'Argumentos requeridos: Auth (mail, auth y psw)')
         })
     
     try:
@@ -282,3 +282,15 @@ if __name__ == '__main__':
     #     port=config['api']['port'],
     #     debug=config['api']['debug']
     # ) # Lanzamos la api
+
+
+"""
+Control de CORS.() Ahora mismo acepta todo
+"""
+@app.after_request
+def after_request(response): 
+    response.headers["Access-Control-Allow-Origin"] = "*" # Cambiar cuando sepamos el dominio final
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization,authorization,mail,psw"
+    return response

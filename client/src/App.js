@@ -1,5 +1,3 @@
-import './App.css';
-
 import {
 	BrowserRouter,
 	Routes,
@@ -18,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path='registro' element={<Registro />} />
+        <Route path='/registro' element={<Registro />} />
       </Routes>
     </BrowserRouter>
   );
