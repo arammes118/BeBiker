@@ -1,22 +1,43 @@
 # Importamos Flask
 from flask import Flask, request, jsonify
+
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
 
 #Importamos fichero con funciones de ayuda
 from asset.funciones import *
+from asset.json import *
 
-# Importamos fichero config de la bd
+# Importamos fichero config
 from config import config
 
+# Importamos los módulos de las diferentes rutas (Blueprint)
+from routes.publicaciones import publicaciones
+from routes.rutas import rutas
+from routes.usuario import perfil
+
+# Creamos la aplicación
 app = Flask(__name__)
+
+# Cargamos el diccionario de configuración
+configApi = cargaJSON("../config.json")
+ 
+# Creamos URL de nuestra aplicacion
+URL = f"/{configApi['api']['app']}/{configApi['api']['version']}"
 
 # Creamos variable con la conexión a la BBDD   
 conex = MySQL(app)
 
+#####################################################################
+#### DIFERENTES ENDPOINT SEPARADOS POR RUTAS
+#####################################################################
+app.register_blueprint(publicaciones, url_prefix=f"/{URL}/publicaciones") # Ruta publicaciones
+app.register_blueprint(rutas, url_prefix=f"/{URL}/rutas") # Ruta rutas
+app.register_blueprint(perfil, url_prefix=f"/{URL}/perfil") # Ruta perfil
+
 # # # # # # # # END-POINT # # # # # # # #
 # LOGIN USUARIOS
-@app.route('/login')
+@app.route(f'/{URL}/login')
 def login():
     mail = request.headers.get('mail')
     psw = request.headers.get('psw')
@@ -57,11 +78,70 @@ def login():
         })
 
 # # # # # # # # END-POINT # # # # # # # #
+# RUTA REGISTRO USUARIO
+@app.route(f'/{URL}/registro', methods=['POST'])
+def registrarUsuario():
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"JSON requerido")
+        })
+    
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('mail' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: mail")
+        })
+    if ('psw' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: psw")
+        })
+    if ('usuario' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: usuario")
+        })
+    if ('nombre' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: nombre")
+        })
+    if ('fecha' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: fecha")
+        })
+    
+   # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f'Problema al conectar a la BD')
+        })
+    
+    try:
+        # Consulta SQL
+        cursor.execute("""INSERT INTO usuarios (mail, psw, usuario, nombre, fecha) 
+                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"""
+                       .format(mJson['mail'], mJson['psw'], mJson['usuario'], mJson['nombre'], mJson['fecha']))
+        conex.connection.commit() # Confirma la accion de inserción
+
+        return jsonify({'mensaje': 'OK'})
+    except:
+        return jsonify({'mensaje': 'NO'})
+    
+# # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
-@app.route('/productos', methods=['GET'])
+@app.route(f'/{URL}/productos', methods=['GET'])
 def listarProductos():
     try:
-        cursor = conex.connection.cursor() # Creamos un cursor para la consulta
+        cursor = conex.connection.cursor()# Creamos un cursor para la consulta
     except:
         return respuesta({
             'estado': ERR_NO_CONNECT_BD,
@@ -129,10 +209,15 @@ def insertarProducto():
                 .format(mJson['nombre'], mJson['precio'], mJson['descripcion']))
         conex.connection.commit() # Confirma la accion de inserción
 
-        return jsonify({'mensaje': 'OK'})
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': ("OK")
+        })
     except:
-        return jsonify({'mensaje': 'NO'})
-
+        return respuesta({
+            'estado': ERR_OTHER,
+            'mensaje': ("Error al registrar")
+        })
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA BORRAR PRODUCTOS
@@ -181,6 +266,12 @@ def paginaNoEncontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>"
 
 if __name__ == '__main__':
+    # print("API en el puerto %s"%(config['api']['port']))
     app.config.from_object(config['development']) # Cargamos la configuración de nuestra BBDD en la app
     app.register_error_handler(404, paginaNoEncontrada) # Controlamos el error de página no encontrada
     app.run() # Lanzamos la api
+    # app.run(
+    #     host=config['api']['host'],
+    #     port=config['api']['port'],
+    #     debug=config['api']['debug']
+    # ) # Lanzamos la api
