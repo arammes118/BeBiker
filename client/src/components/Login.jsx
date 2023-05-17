@@ -20,7 +20,7 @@ const Login = () => {
     const rPsw = useRef()
 
     //Contexto que manejara las peticiones a la BD
-    const peticion = useContext(ConexContext)
+    const { peticion } = useContext(ConexContext)
 
     //Función que maneja el login del usuario
     async function login(event) {
@@ -36,6 +36,14 @@ const Login = () => {
                     psw: Psw
                 }
             })
+            console.log(res); // Verifica la estructura de la respuesta en la consola
+            if (res && res.auth) {
+                // Autenticación exitosa
+                console.log('Login successful');
+            } else {
+                // Credenciales incorrectas o propiedad 'auth' no está presente en la respuesta
+                setError("Las claves de acceso son incorrectas");
+            }
             if (!res.res.auth)
                 setError("Las claves de acceso son incorrectas")
         }
