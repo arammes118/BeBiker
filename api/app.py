@@ -46,7 +46,7 @@ def login():
     if (mail == None or psw == None):
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: mail, psw')
+            'mensaje': (f'Argumentos requeridos: Auth (mail, psw)')
         })
     
     try:
@@ -61,21 +61,28 @@ def login():
     # Consultamos el usuario
     sql = """SELECT idUsuario
              FROM usuarios
-             WHERE mail = %s AND psw = %s;""", (mail, psw)
-    cursor.execute(sql) # Ejecutamos la consulta
+             WHERE mail = %s AND psw = %s;"""
+    values = (mail, psw)
+    cursor.execute(sql, values) # Ejecutamos la consulta
     res = cursor.fetchall() # Guardamos los resultados
-    cursor.close() # Cerramos la conexión
-
+    cursor.close()
+    
     if len(res) == 0:
-        return respuesta({
+        return (respuesta({
             'estado': EST_OK,
-            'mensaje': 'NO OK'
-        })
+            'mensaje': 'NO OK',
+            'res': {
+                'auth': False
+            }
+        }))
     else:
-        return respuesta({
+        return (respuesta({
             'estado': EST_OK,
-            'mensaje': 'OK'
-        })
+            'mensaje': 'OK',
+            'res': {
+                'auth': True,
+            }
+        }))
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA REGISTRO USUARIO
