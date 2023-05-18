@@ -1,5 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
+//Libreria especifica para fechas
+import moment from 'moment';
+
 //CSS
 import '../assets/css/styles.css'
 
@@ -10,15 +13,13 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from "../context/ConexContext"
 import { Link, useNavigate } from 'react-router-dom'
 
-const Registro = (props) => {
+const Registro = () => {
     // ESTADOS
     const [ErrMail, setErrorMail] = useState('') //Cualquier error en el mail
     const [ErrPsw, setErrorPsw] = useState('') //Cualquier error en la psw
     const [ErrNombre, setErrorNombre] = useState('') //Cualquier error en el nombre
     const [ErrUsuario, setErrorUsuario] = useState('') //Cualquier error en el usuario
-    const [ErrApellidos, setErrorApellidos] = useState('') //Cualquier error en el apellidos
     const [ErrFechaNac, setErrorFechaNac] = useState('') //Cualquier error en la fecha
-    const [ErrTelefono, setErrorTelefono] = useState('') //Cualquier error en el telefono
 
     //REFs
     const rId = useRef()
@@ -26,12 +27,10 @@ const Registro = (props) => {
     const rPsw = useRef()
     const rUsuario = useRef()
     const rNombre = useRef()
-    const rApellidos = useRef()
     const rFechaNac = useRef()
-    const rTelefono = useRef()
 
     //Contexto que manejara las peticiones a la BD
-    const peticion = useContext(ConexContext)
+    const { peticion } = useContext(ConexContext)
 
     const navigate = useNavigate()
 
@@ -40,36 +39,37 @@ const Registro = (props) => {
         event.preventDefault()
         //expresiones regulares
         const expMail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-        const expTel = /^\d{9}$/
-
-        if (rMail.current.value === '')
-            setErrorMail('Introduce un correo electrónico')
+        const regPsw = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+        const fechaLimite = moment("1900-01-01"); // fecha límite
+        const edadMinima = moment().subtract(16, 'years') //Valida que el usuario tenga 16 años o más
+        
+        if (rMail.current.value === '' || !expMail.test(rMail.current.value))
+            setErrorMail('Introduce un correo electrónico válido')
         else if (rPsw.current.value === '')
             setErrorPsw('Introduce una contraseña')
+        else if (!regPsw.test(rPsw.current.value))
+            setErrorPsw("La contraseña debe contener al menos 6 caracteres, incluyendo letras y números")
         else if (rUsuario.current.value === '')
             setErrorUsuario('Introduce un nombre de usuario')
         else if (rNombre.current.value === '')
             setErrorNombre('Introduce un nombre')
-        else if (rApellidos.current.value === '')
-            setErrorApellidos('Introduce un apellido')
-        else if (rFechaNac.current.value === '')
-            setErrorFechaNac('Introduce una fecha de nacimiento')
-        else if (rTelefono.current.value === '')
-            setErrorTelefono('Introduce un telefono')
+        else if (rFechaNac.current.value === '' || !moment(rFechaNac.current.value).isBefore(moment()) || !moment(rFechaNac.current.value).isAfter(fechaLimite))
+            setErrorFechaNac('Introduce una fecha de nacimiento válida')
+        else if (!moment(rFechaNac.current.value).isBefore(edadMinima))
+            setErrorFechaNac('Debes ser mayor a 16 años')
         else {
-            let pet
-            if (props.show < 0) {
-                pet = await peticion('/registro', {
+            let pet = await peticion('/registro', {
                     method: 'POST',
                     json: {
                         mail: rMail.current.value,
                         usuario: rUsuario.current.value,
                         nombre: rNombre.current.value,
-                        fechaNacimiento: rFechaNac.current.value,
-                        pws: rPsw.current.value
+                        fecha: rFechaNac.current.value,
+                        psw: rPsw.current.value
                     }
                 })
-            }
+            console.log(pet); // Verifica la estructura de la respuesta en la consola
+            navigate("/login")
         }
     }
 
@@ -117,9 +117,6 @@ const Registro = (props) => {
                     </div>
                     <div className="input-group">
                         <button type="submit" className="btnLogin">Registrarse</button>
-                        <div className='error'>
-                            <p className='error1'>{Error}</p>
-                        </div>
                     </div>
                 </form>
                 <div className="registro">
