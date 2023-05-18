@@ -46,7 +46,7 @@ def login():
     if (mail == None or psw == None):
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: Auth (mail, auth y psw)')
+            'mensaje': (f'Argumentos requeridos: Auth (mail y psw)')
         })
     
     try:
@@ -272,18 +272,6 @@ def bor():
 def paginaNoEncontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>"
 
-if __name__ == '__main__':
-    # print("API en el puerto %s"%(config['api']['port']))
-    app.config.from_object(config['development']) # Cargamos la configuración de nuestra BBDD en la app
-    app.register_error_handler(404, paginaNoEncontrada) # Controlamos el error de página no encontrada
-    app.run() # Lanzamos la api
-    # app.run(
-    #     host=config['api']['host'],
-    #     port=config['api']['port'],
-    #     debug=config['api']['debug']
-    # ) # Lanzamos la api
-
-
 """
 Control de CORS.() Ahora mismo acepta todo
 """
@@ -291,6 +279,12 @@ Control de CORS.() Ahora mismo acepta todo
 def after_request(response): 
     response.headers["Access-Control-Allow-Origin"] = "*" # Cambiar cuando sepamos el dominio final
     response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization,authorization,mail,psw"
+    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, mail, psw"
     return response
+
+if __name__ == '__main__':
+    # print("API en el puerto %s"%(config['api']['port']))
+    app.config.from_object(config['development']) # Cargamos la configuración de nuestra BBDD en la app
+    app.register_error_handler(404, paginaNoEncontrada) # Controlamos el error de página no encontrada
+    app.run() # Lanzamos la api
