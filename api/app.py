@@ -87,7 +87,7 @@ def login():
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA REGISTRO USUARIO
 @app.route(f'/{URL}/registro', methods=['POST'])
-def registrarUsuario():
+def registro():
     # JSON con los datos
     mJson = request.json
     if (mJson == None):
@@ -272,19 +272,16 @@ def bor():
 def paginaNoEncontrada(error):
     return "<h1>La página que intentas buscar no existe</h1>"
 
-"""
-Control de CORS.() Ahora mismo acepta todo
-"""
+# # # # # # # # CONTROL DE CORS # # # # # # # 
 @app.after_request
 def after_request(response): 
-    response.headers["Access-Control-Allow-Origin"] = "*" # Cambiar cuando sepamos el dominio final
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
     response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, authorization, mail, psw"
     return response
 
 if __name__ == '__main__':
-    # print("API en el puerto %s"%(config['api']['port']))
     app.config.from_object(config['development']) # Cargamos la configuración de nuestra BBDD en la app
     app.register_error_handler(404, paginaNoEncontrada) # Controlamos el error de página no encontrada
     app.run() # Lanzamos la api

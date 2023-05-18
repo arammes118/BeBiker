@@ -82,7 +82,9 @@ const Login = () => {
                     </div>
                 </form>
                 <div className="forgot-password">
-                    <a href="#">¿Has olvidado la contraseña?</a>
+                    <Link to={{ pathname: '/resetpass' }} className='link'>
+                        ¿Has olvidado la contraseña?
+                    </Link>
                 </div>
                 <div className="registro">
                     ¿No tienes una cuenta?
