@@ -280,7 +280,7 @@ def after_request(response):
     response.headers["Access-Control-Allow-Origin"] = "*" # Cambiar cuando sepamos el dominio final
     response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
-    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, mail, psw"
+    response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, authorization, mail, psw"
     return response
 
 if __name__ == '__main__':

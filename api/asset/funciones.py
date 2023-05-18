@@ -5,7 +5,6 @@ from asset.constantes import *
 from asset.json import *
 
 from config import DevelopmentConfig
-import requests
 
 # Cargamos el diccionario con la configuracion de la BD
 config = cargaJSON('../config.json')
@@ -29,8 +28,22 @@ def peticion(url, method='GET', json=None):
 					json=json,
 					auth=Auth,
 					verify=False).json())
+        elif (method=='POST'):
+            return(requests.post(url,
+					headers=headers,
+					params= payload,
+					json=json,
+					auth=Auth,
+					verify=False).json())
+        elif (method=='DELETE'):
+            return(requests.delete(url,
+					headers=headers,
+					params= payload,
+					json=json,
+					auth=Auth,
+					verify=False).json())
     except:
-        print("ERROR EN LA PETICION")
+        return (None)
 
 
 # FUNCION DE RESPUESTA HTTP
