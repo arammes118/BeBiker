@@ -7,10 +7,13 @@ from asset.json import *
 from config import DevelopmentConfig
 import requests
 
+# Cargamos el diccionario con la configuracion de la BD
+config = cargaJSON('../config.json')
+
 # FUNCION DE PETICIONES A LA BD
 def peticion(url, method='GET', json=None):
-    Auth = None if not hasattr(DevelopmentConfig, 'MYSQL_USER') else (DevelopmentConfig.MYSQL_USER, DevelopmentConfig.MYSQL_PASSWORD)
-    url = f"http://{DevelopmentConfig.MYSQL_HOST}:5000{url}"
+    Auth = None if 'user' not in config['db'] else (config['db']['user'], config['db']['psw'])
+    url = f"http://{DevelopmentConfig.MYSQL_HOST}:{DevelopmentConfig.MYSQL_PORT}{url}"
     headers =	{
 			"content-type": "application/json",
 			"Accept": "application/json"
