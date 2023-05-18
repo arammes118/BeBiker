@@ -8,7 +8,7 @@ import logo from '../assets/img/BeBiker.png'
 
 //CONTEXTO
 import ConexContext from "../context/ConexContext"
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Login = () => {
     const [Mail, setMail] = useState("")
@@ -21,6 +21,8 @@ const Login = () => {
 
     //Contexto que manejara las peticiones a la BD
     const { peticion } = useContext(ConexContext)
+
+    const navigate = useNavigate()
 
     //Función que maneja el login del usuario
     async function login(event) {
@@ -37,15 +39,11 @@ const Login = () => {
                 }
             })
             console.log(res); // Verifica la estructura de la respuesta en la consola
-            if (res && res.auth) {
-                // Autenticación exitosa
-                console.log('Login successful');
-            } else {
-                // Credenciales incorrectas o propiedad 'auth' no está presente en la respuesta
-                setError("Las claves de acceso son incorrectas");
-            }
+
             if (!res.res.auth)
                 setError("Las claves de acceso son incorrectas")
+            else 
+                navigate("/publicaciones")
         }
     }
 
