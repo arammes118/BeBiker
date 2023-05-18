@@ -3,7 +3,8 @@ import React from 'react'
 import ConexContext from './ConexContext';
 
 const ConexState = (props) => {
-    const config = require('../config/config.json');
+    const config = require('../config/config.json')
+
     /**
     * lanza una peticion al microservicio
     * @param {string} url 
@@ -14,8 +15,8 @@ const ConexState = (props) => {
                 mensaje: "Imposible mandar JSON con el método GET",
                 estado: 3
             })
-        let data
 
+        let data
         try {
             let conexBack = config.conexBack
             let host = conexBack.host
@@ -29,11 +30,12 @@ const ConexState = (props) => {
                 param['body'] = JSON.stringify(json)
             }
             if (conexBack?.port??null) //si el puerto es 0 no se usa
-            host+=':'+conexBack.port
+                host+=':'+conexBack.port
 
-            data = await fetch(`${host}/${conexBack.app}/${conexBack.version}${url}`, param)
+            data = await fetch(`${host}/${conexBack.app}/${conexBack.version}${url}`,param)
 
-        } catch {
+        } catch (error) {
+            console.error(error)
             return {
                 mensaje: "El microservicio no responde",
                 estado: 1
@@ -48,10 +50,7 @@ const ConexState = (props) => {
         }
         data = await data.json()
         data.peticion = url
-
-        if (config.DebugMode)
-            console.log(data)
-
+        
         return (data)
     }
 
