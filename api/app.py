@@ -142,7 +142,7 @@ def registro():
         return jsonify({'mensaje': 'OK'})
     except:
         return jsonify({'mensaje': 'NO'})
-    
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
 @app.route(f'/{URL}/productos', methods=['GET'])
