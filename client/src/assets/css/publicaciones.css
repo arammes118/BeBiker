@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Contenedor de la página */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Publicación individual */
+.post {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    margin-top: 50%;
+    padding: 10px;
+    background-color: #fff;
+}
+
+/* Encabezado de la publicación */
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.username {
+    font-weight: bold;
+}
+
+/* Contenido de la publicación */
+.post-content {
+    margin-bottom: 10px;
+}
+
+.image {
+    max-width: 100%;
+    height: auto;
+}
+
+.caption {
+    font-size: 14px;
+}
+
+/* Contador de likes y comentarios */
+.likes-comments {
+    font-size: 12px;
+    color: #777;
+}
+
+/* Comentarios */
+.comments {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.comment {
+    margin-bottom: 5px;
+}
+
+.comment .username {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+/* Agregar espacio entre publicaciones */
+.post + .post {
+    margin-top: 20px;
+}
