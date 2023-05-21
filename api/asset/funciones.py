@@ -1,3 +1,9 @@
+import time
+import jwt
+
+# Importamos request de Flask
+from flask import request
+
 # Importamos las constantes de los estados de la API
 from asset.constantes import *
 
@@ -45,7 +51,6 @@ def peticion(url, method='GET', json=None):
     except:
         return (None)
 
-
 # FUNCION DE RESPUESTA HTTP
 def respuesta(mensaje):
     if (mensaje['estado'] == EST_OK): # ESTADO TODO BIEN
@@ -55,3 +60,47 @@ def respuesta(mensaje):
     else: # RESTO DE ERRORES
         estado = 400
     return mensaje, estado
+
+# FUNCION QUE DEVUELVE UN JWT codificado
+def getJWT(pay):
+    pay['iat'] = round(time.time())
+    pay['exp'] = pay['iat'] + config['api']['expToken'] # expiracion del token
+    return (jwt.encode(pay, config['api']['secretJWT'], algorithm='HS256'))
+
+# FUNCIÓN AUTENTIFICA EL JWT
+def autentificacion():
+    token = request.headers.get('authorization')
+    # comprobamos que se le pase el token por el header
+    if (token == None):
+        return ({
+            'estado': ERR_TOKEN_REQ,
+            'mensaje': (f'Token requerido'),
+            'token': ''
+        })
+    
+    try:
+        # Decodificamos el token pasado con la claveJWT que la encripta para validar que es correcta
+        payload = jwt.decode(token, config['api']['secretJWT'], algorithm='HS256') 
+
+    except jwt.ExpiredSignatureError: # Nuestro token ha expirado
+        return ({
+            'estado': ERR_TOKEN_EXP,
+            'mensaje': (f'Token expirado'),
+            'token': ''
+        })
+    
+    except jwt.InvalidTokenError: # El token no es correcto
+        return ({
+            'estado': ERR_TOKEN_INV,
+            'mensaje': (f'Token inválido'),
+            'token': ''
+        })
+    
+    res = {
+        'estado': EST_OK,
+        'mensaje': 'OK'
+    }
+
+    if (round(time.time()) - payload['iat'] > config['api']['renToken']): # Hay que renovar el token
+        res['token'] = getJWT(payload)
+    return (res)
