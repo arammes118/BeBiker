@@ -3,6 +3,7 @@ import jwt
 
 # Importamos request de Flask
 from flask import request
+from asset.conexDB import conexDB
 
 # Importamos las constantes de los estados de la API
 from asset.constantes import *
@@ -15,10 +16,19 @@ from config import DevelopmentConfig
 # Cargamos el diccionario con la configuracion de la BD
 config = cargaJSON('../config.json')
 
+def conex():
+	return conexDB( 
+		host = config['db']['host'], 
+		user = config['db']['user'],
+		port = config['db']['port'],
+		psw = config['db']['psw'], 
+		db = config['db']['db'] 
+    )
+
 # FUNCION DE PETICIONES A LA BD
 def peticion(url, method='GET', json=None):
     Auth = None if 'user' not in config['db'] else (config['db']['user'], config['db']['psw'])
-    url = f"http://{DevelopmentConfig.MYSQL_HOST}:{DevelopmentConfig.MYSQL_PORT}{url}"
+    url = f"http://{config['db']['host']}:{config['db']['port']}{url}"
     headers =	{
 			"content-type": "application/json",
 			"Accept": "application/json"
