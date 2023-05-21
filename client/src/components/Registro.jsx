@@ -13,7 +13,7 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from "../context/ConexContext"
 import { Link, useNavigate } from 'react-router-dom'
 
-const Registro = () => {
+const Registro = (props) => {
     // ESTADOS
     const [ErrMail, setErrorMail] = useState('') //Cualquier error en el mail
     const [ErrPsw, setErrorPsw] = useState('') //Cualquier error en la psw
@@ -42,7 +42,7 @@ const Registro = () => {
         const regPsw = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
         const fechaLimite = moment("1900-01-01"); // fecha límite
         const edadMinima = moment().subtract(16, 'years') //Valida que el usuario tenga 16 años o más
-        
+
         if (rMail.current.value === '' || !expMail.test(rMail.current.value))
             setErrorMail('Introduce un correo electrónico válido')
         else if (rPsw.current.value === '')
@@ -58,16 +58,25 @@ const Registro = () => {
         else if (!moment(rFechaNac.current.value).isBefore(edadMinima))
             setErrorFechaNac('Debes ser mayor a 16 años')
         else {
-            let pet = await peticion('/registro', {
-                    method: 'POST',
-                    json: {
-                        mail: rMail.current.value,
-                        usuario: rUsuario.current.value,
-                        nombre: rNombre.current.value,
-                        fecha: rFechaNac.current.value,
-                        psw: rPsw.current.value
-                    }
-                })
+            let pet
+            // Comprobamos que no haya un usuario con ese mail ya
+            pet = await peticion(`/registro/rep_mail?mail=${rMail.current.value}`)
+            if (!pet?.estado ?? 1) //Estado OK
+                if ((pet?.res?.idUsuario ?? 1) > -1) {
+                    setErrorMail("Ese correo electrónico ya está registrado")
+                    return
+                }
+
+            pet = await peticion('/registro', {
+                method: 'POST',
+                json: {
+                    mail: rMail.current.value,
+                    usuario: rUsuario.current.value,
+                    nombre: rNombre.current.value,
+                    fecha: rFechaNac.current.value,
+                    psw: rPsw.current.value
+                }
+            })
             console.log(pet); // Verifica la estructura de la respuesta en la consola
             navigate("/login")
         }
@@ -120,10 +129,10 @@ const Registro = () => {
                     </div>
                 </form>
                 <div className="registro">
-                    ¿Tienes una cuenta? 
-                    <Link to={{pathname:'/login'}} className='link'>
+                    ¿Tienes una cuenta?
+                    <Link to={{ pathname: '/login' }} className='link'>
                         Entra
-					</Link>
+                    </Link>
                 </div>
             </div>
         </div>

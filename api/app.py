@@ -146,6 +146,40 @@ def registro():
         return jsonify({'mensaje': 'NO'})
 
 # # # # # # # # END-POINT # # # # # # # #
+# RUTA COMPROBAR MAIL NO REPETIDO
+@app.route(f'/{URL}/registro/rep_mail')
+def repMail():
+    # Argumentos necesarios
+    if (request.args.get("mail") == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f'Argumentos requeridos: mail')
+        })
+    
+    mail = request.args.get("mail")
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE mail = %s;", (mail,))
+    res = cursor.fetchone()
+
+    if res == None:
+        res = [-1]
+    
+    result = {
+        'res': {
+            'idUsuario': res[0]
+        }
+    }
+    cursor.close()
+    return respuesta(result)
+
+# # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
 @app.route(f'/{URL}/productos', methods=['GET'])
 def listarProductos():
