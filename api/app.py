@@ -46,7 +46,7 @@ def login():
     if (mail == None or psw == None):
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: Auth (mail y psw)')
+            'mensaje': (f'Argumentos requeridos: Auth (mail, auth y psw)')
         })
     
     try:
@@ -71,6 +71,7 @@ def login():
         return (respuesta({
             'estado': EST_OK,
             'mensaje': 'NO OK',
+            'jwt': '',
             'res': {
                 'auth': False
             }
@@ -79,6 +80,7 @@ def login():
         return (respuesta({
             'estado': EST_OK,
             'mensaje': 'OK',
+            'jwt': getJWT({'id':res[0][0]}),
             'res': {
                 'auth': True,
             }
