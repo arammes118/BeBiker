@@ -1,9 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-
-import ConexContext from '../context/ConexContext'
-
 //CSS
 import '../assets/css/styles.css'
 
@@ -44,15 +41,10 @@ export const ResetPass = () => {
                         </div>
                     </div>
                 </form>
-                <div className="forgot-password">
-                    <Link to={{ pathname: '/resetpass' }} className='link'>
-                        ¿Has olvidado la contraseña?
-                    </Link>
-                </div>
                 <div className="registro">
-                    ¿No tienes una cuenta?
-                    <Link to={{ pathname: '/registro' }} className='link'>
-                        Registrate
+                    Contraseña recordada
+                    <Link to={{ pathname: '/login' }} className='link'>
+                        Entra
                     </Link>
                 </div>
             </div>
