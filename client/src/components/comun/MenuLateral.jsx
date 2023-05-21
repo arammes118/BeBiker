@@ -8,8 +8,6 @@ import ruta from '../../assets/img/ruta.png'
 import subir from '../../assets/img/subir.png'
 import user from '../../assets/img/chema.jpg'
 import home from '../../assets/img/home.png'
-import logo from '../../assets/img/BeBiker.png'
-
 
 import '../../assets/css/menu.css'
 
@@ -22,7 +20,6 @@ export const MenuLateral = () => {
         let handler = (e) => {
             if (!menuRef.current.contains(e.target)) {
                 setOpen(false);
-                console.log(menuRef.current);
             }
         };
         document.addEventListener("mousedown", handler);
@@ -43,20 +40,13 @@ export const MenuLateral = () => {
                 <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`} >
                     <h3>_alfonsormz03_<br /><span>Alfonso Ramirez</span></h3>
                     <ul>
-                        <Link to={{ pathname: '/publicaciones' }}>
-                            <DropdownItem img={home} text={"Publicaciones"} />
-                        </Link>
-                        <Link>
-                            <DropdownItem img={subir} text={"Subir"} />
-                        </Link>
-                        <Link>
-                            <DropdownItem img={ruta} text={"Rutas"} />
-                        </Link>
-                        <Link>
-                            <DropdownItem img={perfil} text={"Mi Perfil"} />
-                        </Link>
+                        <DropdownItem to="/publicaciones" img={home} text={"Publicaciones"} />
+                        <DropdownItem to="/subir" img={subir} text={"Subir"} />
+                        <DropdownItem to="/rutas" img={ruta} text={"Rutas"} />
+                        <DropdownItem to="/perfil" img={perfil} text={"Mi Perfil"} />
 
-                        <DropdownItem img={salir} text={"Cerrar sesión"} />
+
+                        <DropdownItem to="/login" img={salir} text={"Cerrar sesión"} />
                     </ul>
                 </div>
             </div>
@@ -71,7 +61,7 @@ function DropdownItem(props) {
     return (
         <li className='dropdownItem'>
             <img src={props.img}></img>
-            <a> {props.text} </a>
+            <Link to={props.to}>{props.text}</Link>
         </li>
     );
 }
