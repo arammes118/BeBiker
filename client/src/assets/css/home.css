@@ -1,0 +1,43 @@
+.home-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .app-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .post-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Mostrar 3 columnas de publicaciones */
+    grid-gap: 20px;
+  }
+  
+  .post {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+  
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .username {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+  
+  .post-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+  }
+  
+  .post-caption {
+    margin-top: 10px;
+  }
