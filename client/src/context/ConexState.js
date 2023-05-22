@@ -4,13 +4,17 @@ import ConexContext from "./ConexContext";
 import ConexReducer from "./ConexReducer";
 
 const ConexState = (props) => {
+    // Estado inicial del contexto
     const initialState = {
         token: null,
         locale: null,
         jwtSecu: null,
         perfil_id: null,
-    };
-    const [state, dispatch] = useReducer(ConexReducer, { initialState });
+    }
+    // Estado del contexto y reducer
+    const [state, dispatch] = useReducer(ConexReducer, { initialState })
+
+    // Configuracion del backend
     const config = require('../config/config.json');
 
     /**
@@ -29,12 +33,14 @@ const ConexState = (props) => {
 
         let data
         try {
+            // Configuracion de la conexión al microservicio
             let conexBack = config.conexBack
             let host = conexBack.host;
             let param = {
                 method: method,
                 headers: headers
             }
+            // Incluimos el token en el encabezado
             param.headers.authorization = state.token
 
             if (json) {
@@ -43,6 +49,8 @@ const ConexState = (props) => {
             }
             if (conexBack?.port ?? null) //si el puerto es 0 no se usa
                 host += ':' + conexBack.port
+            
+            // Realizamos la petición al microservicio
             data = await fetch(`${host}/${conexBack.app}/${conexBack.version}${url}`, param);
         }
         catch {
@@ -59,22 +67,18 @@ const ConexState = (props) => {
             })
         data = await data.json();
         data.peticion = url
-        // si el token hay que renovarlo o ha expirado nos devuelve otro-> lo guardamos
+
+        // Si el token hay que renovarlo o ha expirado nos devuelve otro y lo guardamos
         if ('token' in data)
             dispatch({ 
                 type: 'SET_JWT', 
                 payload: data.token 
             })
-
-        if (config.DebugMode) {
-            console.log(data);
-        }
         return (data)
     }
 
-    /**
-    * Hará saltar el effect 
-    */
+    
+    // Actualiza el token en el estado
     const setToken = async (token) => {
         dispatch({ 
             type: 'SET_JWT', 
