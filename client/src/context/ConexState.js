@@ -8,8 +8,7 @@ const ConexState = (props) => {
         token: null,
         locale: null,
         jwtSecu: null,
-        perfil_rol: null,
-        perfil_tipo_entidad: null,
+        perfil_id: null,
     };
     const [state, dispatch] = useReducer(ConexReducer, { initialState });
     const config = require('../config/config.json');
@@ -62,28 +61,31 @@ const ConexState = (props) => {
         data.peticion = url
         // si el token hay que renovarlo o ha expirado nos devuelve otro-> lo guardamos
         if ('token' in data)
-            dispatch({ type: 'SET_JWT', payload: data.token })
+            dispatch({ 
+                type: 'SET_JWT', 
+                payload: data.token 
+            })
 
         if (config.DebugMode) {
             console.log(data);
         }
-
         return (data)
     }
 
     /**
     * Hará saltar el effect 
     */
-
     const setToken = async (token) => {
-        dispatch({ type: 'SET_JWT', payload: token });
+        dispatch({ 
+            type: 'SET_JWT', 
+            payload: token 
+        });
     };
 
     return (
         <ConexContext.Provider
             value={{
                 token: state.token,
-                locale: state.locale,
                 perfil_id: state.perfil_id,
                 setToken,
                 peticion

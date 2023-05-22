@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
 //IMGs
@@ -10,8 +10,11 @@ import user from '../../assets/img/chema.jpg'
 import home from '../../assets/img/home.png'
 
 import '../../assets/css/menu.css'
+import ConexContext from '../../context/ConexContext'
 
 export const MenuLateral = () => {
+    //Contexto para asignar el Token a '' cuando cierre sesión
+    const { setToken } = useContext(ConexContext)
     const [open, setOpen] = useState(false)
 
     let menuRef = useRef()
@@ -45,8 +48,10 @@ export const MenuLateral = () => {
                         <DropdownItem to="/rutas" img={ruta} text={"Rutas"} />
                         <DropdownItem to="/perfil" img={perfil} text={"Mi Perfil"} />
 
-
-                        <DropdownItem to="/login" img={salir} text={"Cerrar sesión"} />
+                        <li className='dropdownItem' onClick={() => setToken('')}>
+                            <img src={salir} alt="Salir" />
+                            <Link to="/login">Cerrar sesión</Link>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -80,7 +80,9 @@ def login():
         return (respuesta({
             'estado': EST_OK,
             'mensaje': 'OK',
-            'jwt': getJWT({'id':res[0][0]}),
+            'token': getJWT({
+                'id':res[0][0]
+            }),
             'res': {
                 'auth': True,
             }

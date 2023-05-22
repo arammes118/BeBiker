@@ -34,7 +34,7 @@ function App() {
     console.log('token', token);
   }, [token, guaLocalToken])
 
-  /*if (!token) {
+  if (!token) {
     return (
       <BrowserRouter>
         <Routes>
@@ -45,23 +45,19 @@ function App() {
         </Routes>
       </BrowserRouter>
     )
-  } else {*/
+  } else {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path='/registro' element={<Registro />} />
-          <Route path='/resetpass' element={<ResetPass />} />
           <Route element={<MenuLateral />}>
-            {/*<Route index element={<Publicaciones />} />*/}
+            <Route index element={<Publicaciones />} />
             <Route path="/publicaciones" element={<Publicaciones />} />
             <Route path='/subir' element={<Subir />} />
           </Route>
         </Routes>
       </BrowserRouter>
     )
-  //}
+  }
 }
 
 export default App;
