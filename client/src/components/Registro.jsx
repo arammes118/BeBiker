@@ -13,7 +13,7 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from "../context/ConexContext"
 import { Link, useNavigate } from 'react-router-dom'
 
-const Registro = (props) => {
+const Registro = () => {
     // ESTADOS
     const [ErrMail, setErrorMail] = useState('') //Cualquier error en el mail
     const [ErrPsw, setErrorPsw] = useState('') //Cualquier error en la psw
