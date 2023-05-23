@@ -1,5 +1,6 @@
 # Importamos Flask
 from flask import Flask, request, jsonify
+import base64
 
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
@@ -180,6 +181,83 @@ def repMail():
     }
     cursor.close()
     return respuesta(result)
+
+@app.route(f"{URL}/publicaciones")
+def list():
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario
+                FROM publicaciones p
+                JOIN usuarios u ON p.cfUsuario = u.idUsuario
+                """)
+    res = cur.fetchall()
+
+    publicaciones = []
+    for elem in res:
+        publicacion = {
+            'idPublicacion': elem[0],
+            'descripcion': elem[1],
+            'usuario': elem[2]
+        }
+        publicaciones.append(publicacion)
+    cur.close()
+    return jsonify(publicaciones)
+
+@app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
+def ins():
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"JSON requerido")
+        })
+    
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('descripcion' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: descripcion")
+        })
+    
+    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
+    foto = request.files['foto']  # Accede al archivo de la foto
+    img = foto.read()
+
+    print(img)
+    # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    try:
+
+        # Consulta SQL
+        cursor.execute("""INSERT INTO publicaciones (descripcion, foto, cfUsuario) 
+                VALUES ('{0}', '{1}', '{2}')"""
+                .format(mJson['descripcion'], img, idUsuario))
+        conex.connection.commit() # Confirma la accion de inserción
+
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': ("OK")
+        })
+    except:
+        return respuesta({
+            'estado': ERR_OTHER,
+            'mensaje': ("Error al registrar")
+        })
+
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
