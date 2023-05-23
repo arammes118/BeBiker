@@ -14,10 +14,16 @@ import ConexContext from '../../context/ConexContext'
 
 export const MenuLateral = () => {
     //Contexto para asignar el Token a '' cuando cierre sesión
-    const { setToken } = useContext(ConexContext)
+    const { setToken, peticion, perfil_id } = useContext(ConexContext)
     const [open, setOpen] = useState(false)
+    const [Usuario, setUsuario] = useState('')
+    const [Nombre, setNombre] = useState('')
 
     let menuRef = useRef()
+    const rId = useRef()
+    const rMail = useRef()
+    const rUsuario = useRef()
+    const rNombre = useRef()
 
     useEffect(() => {
         let handler = (e) => {
@@ -30,8 +36,17 @@ export const MenuLateral = () => {
         return () => {
             document.removeEventListener("mousedown", handler);
         }
-
     });
+
+    useEffect(() => {
+        async function ver() {
+            const pet = await peticion('/perfil/ver?id=' + perfil_id)
+            console.log(pet)
+            setUsuario(pet.usuario)
+            setNombre(pet.nombre)
+        }
+        ver()
+    }, [])
 
     return (
         <>
@@ -41,7 +56,7 @@ export const MenuLateral = () => {
                 </div>
 
                 <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`} >
-                    <h3>_alfonsormz03_<br /><span>Alfonso Ramirez</span></h3>
+                    <h3>{Usuario}<br /><span>{Nombre}</span></h3>
                     <ul>
                         <DropdownItem to="/publicaciones" img={home} text={"Publicaciones"} />
                         <DropdownItem to="/subir" img={subir} text={"Subir"} />
