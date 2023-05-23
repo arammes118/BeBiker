@@ -1,0 +1,57 @@
+.profile-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-image: url('../img/chema.jpg');
+    background-size: cover;
+    background-position: center;
+    margin-right: 20px;
+}
+
+.profile-info h1 {
+    margin-top: 25%;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.profile-info h3 {
+    font-size: 16px;
+}
+
+.profile-info p {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.profile-content {
+    margin-top: 20px;
+}
+
+.post {
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+.post img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.post p {
+    font-size: 14px;
+    margin-top: 5px;
+}

@@ -16,6 +16,7 @@ import { ResetPass } from "./components/ResetPass";
 import { Publicaciones } from "./components/Publicaciones";
 import Subir from "./components/Subir";
 import { MenuLateral } from "./components/comun/MenuLateral";
+import { Perfil } from './components/Perfil';
 
 function App() {
   // Utilizamos el contexto para obtener el token del usuario
@@ -49,10 +50,11 @@ function App() {
     return (
       <BrowserRouter>
         <Routes>
-          <Route element={<MenuLateral />}>
+          <Route path='/' element={<MenuLateral />} >
             <Route index element={<Publicaciones />} />
-            <Route path="/publicaciones" element={<Publicaciones />} />
+            <Route path='/publicaciones' element={<Publicaciones />} />
             <Route path='/subir' element={<Subir />} />
+            <Route path='/perfil' element={<Perfil />} />
           </Route>
         </Routes>
       </BrowserRouter>
