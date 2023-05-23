@@ -182,6 +182,50 @@ def repMail():
     cursor.close()
     return respuesta(result)
 
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA VER PERFIL POR ID
+@app.route(f"{URL}/perfil/ver", methods=["GET"])
+def list2():
+    if (request.args.get("id")==None): # se necesita este argumento para la consulta
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"Argumentos requeridos: id")
+        })
+    
+    try:
+        id = int(request.args.get("id"))
+    except:
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Argumentos con formato erróneo: id")
+        })
+    
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre
+                FROM usuarios
+                WHERE idUsuario = {id};
+                """)
+    res = cur.fetchall()
+
+    if len(res) > 0:
+        usuario = {
+            'idUsuario': res[0][0],
+            'mail': res[0][1],
+            'usuario': res[0][2],
+            'nombre': res[0][3]
+        }
+    cur.close()
+    return jsonify(usuario)
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA LISTAR PUBLICACIONES
 @app.route(f"{URL}/publicaciones")
 def list():
     try:
@@ -209,6 +253,8 @@ def list():
     cur.close()
     return jsonify(publicaciones)
 
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA INSERTAR PUBLICACION
 @app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
 def ins():
     # JSON con los datos
@@ -225,12 +271,12 @@ def ins():
             'estado': ERR_PARAM_NEC,
             'mensaje': (f"Datos requeridos: descripcion")
         })
-    
-    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
-    foto = request.files['foto']  # Accede al archivo de la foto
-    img = foto.read()
 
-    print(img)
+    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
+
+    foto = request.files.get('foto')  # Accede al archivo de la foto
+    print(foto)
+
     # Creamos un cursor para la consulta
     try:
         cursor = conex.connection.cursor()
@@ -245,7 +291,7 @@ def ins():
         # Consulta SQL
         cursor.execute("""INSERT INTO publicaciones (descripcion, foto, cfUsuario) 
                 VALUES ('{0}', '{1}', '{2}')"""
-                .format(mJson['descripcion'], img, idUsuario))
+                .format(mJson['descripcion'], foto, idUsuario))
         conex.connection.commit() # Confirma la accion de inserción
 
         return respuesta({
@@ -257,7 +303,6 @@ def ins():
             'estado': ERR_OTHER,
             'mensaje': ("Error al registrar")
         })
-
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS

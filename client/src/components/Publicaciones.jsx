@@ -86,7 +86,6 @@ export const Publicaciones = () => {
                         component="img"
                         height="200"
                         image={logo}
-                        alt="Paella dish"
                     />
                     <CardActions disableSpacing>
                         <IconButton
