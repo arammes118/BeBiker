@@ -28,6 +28,7 @@ import ShareIcon from '@mui/icons-material/Share'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box } from '@mui/material'
+import { Header } from './comun/Header'
 
 const ExpandMore = styled((props) => {
     const { expand, ...other } = props;
@@ -68,50 +69,53 @@ export const Publicaciones = () => {
     }, [])
 
     return (
-        <div>
-            {List.map((elem) => (
-                <Card sx={{ maxWidth: 345, minWidth: 345 }}>
-                    <CardHeader
-                        avatar={
-                            <Avatar src={logo} />
-                        }
-                        action={
-                            <IconButton aria-label="settings">
-                                <MoreVertIcon />
+        <>
+            <Header />
+            <div>
+                {List.map((elem) => (
+                    <Card sx={{ maxWidth: 345, minWidth: 345 }}>
+                        <CardHeader
+                            avatar={
+                                <Avatar src={logo} />
+                            }
+                            action={
+                                <IconButton aria-label="settings">
+                                    <MoreVertIcon />
+                                </IconButton>
+                            }
+                            title={<span style={{ fontWeight: 'bold' }}>{elem.usuario}</span>}
+                        />
+                        <CardMedia
+                            component="img"
+                            height="200"
+                            image={logo}
+                        />
+                        <CardActions disableSpacing>
+                            <IconButton
+                                aria-label="Me gusta"
+                                onClick={handleClick}
+                                className={active ? 'active' : ''}
+                            >
+                                <FavoriteIcon className={active ? 'activeIcon' : ''} />
                             </IconButton>
-                        }
-                        title={<span style={{ fontWeight: 'bold' }}>{elem.usuario}</span>}
-                    />
-                    <CardMedia
-                        component="img"
-                        height="200"
-                        image={logo}
-                    />
-                    <CardActions disableSpacing>
-                        <IconButton
-                            aria-label="Me gusta"
-                            onClick={handleClick}
-                            className={active ? 'active' : ''}
-                        >
-                            <FavoriteIcon className={active ? 'activeIcon' : ''} />
-                        </IconButton>
-                        <IconButton aria-label="share">
-                            <ShareIcon />
-                        </IconButton>
-                    </CardActions>
+                            <IconButton aria-label="share">
+                                <ShareIcon />
+                            </IconButton>
+                        </CardActions>
 
-                    <CardContent>
-                        <Box display="flex" alignItems="center">
-                            <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
-                                {elem.usuario}
-                            </Typography>
-                            <Typography variant="body1">
-                                {elem.descripcion}
-                            </Typography>
-                        </Box>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
+                        <CardContent>
+                            <Box display="flex" alignItems="center">
+                                <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
+                                    {elem.usuario}
+                                </Typography>
+                                <Typography variant="body1">
+                                    {elem.descripcion}
+                                </Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </>
     )
 }
