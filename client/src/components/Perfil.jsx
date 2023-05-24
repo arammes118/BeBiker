@@ -48,6 +48,15 @@ export const Perfil = () => {
         ver()
     }, [])
 
+    useEffect(() => {
+        async function ver() {
+            const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
+            setList(pet)
+            console.log(pet)
+        }
+        ver()
+    }, [])
+
     return (
         <>
             <div className='card'>
@@ -69,6 +78,8 @@ export const Perfil = () => {
             </div>
 
             <div className="profile-content">
+                <h2>Publicaciones recientes</h2>
+                {List.map((elem) => (
                     <Card className='cardPost'>
                         <CardHeader
                             avatar={
@@ -103,11 +114,12 @@ export const Perfil = () => {
                                     {Usuario}
                                 </Typography>
                                 <Typography variant="body1">
-                                    sdfsdf
+                                    {elem.descripcion}
                                 </Typography>
                             </Box>
                         </CardContent>
                     </Card>
+                ))}
             </div>
         </>
     )

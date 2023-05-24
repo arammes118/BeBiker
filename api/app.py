@@ -335,7 +335,7 @@ def listP():
     
     cur.execute(f"""SELECT idPublicacion, descripcion, u.usuario
                 FROM publicaciones
-                JOIN usuario u ON u.idUsuario = cfUsuario
+                JOIN usuarios u ON u.idUsuario = cfUsuario
                 WHERE cfUsuario = {id};
                 """)
     res = cur.fetchall()
@@ -351,6 +351,7 @@ def listP():
         publicaciones.append(publicacion)
     cur.close()
     return jsonify(publicaciones)
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
 @app.route(f'/{URL}/productos', methods=['GET'])
