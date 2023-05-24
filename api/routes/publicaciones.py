@@ -14,49 +14,49 @@ publicaciones = Blueprint('publicaciones', __name__)
 
 # # # # # # # # # # END-POINT # # # # # # # # # #
 # Listado de publicaciones
-@publicaciones.route(f"/")
-def lis():
-    result = autentificacion()
-    if result['estado'] > 0:
-        return (result)
-    # Argumentos necesarios para listar
-    if (request.args.get("ini") == None):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Argumentos requeridos: ini")
-        })
-    
-    try:
-        ini = int(request.args.get("ini"))
-    except:
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos con formato erróneo: ini')
-        })
-    
-    try:
-        con = conex()
-        cur = con.cursor()
-    except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
-    
-    cur.execute("""SELECT idPublicacion, descripcion
-                FROM publicacion p
-                OFFSET {ini}
-                """.format(ini=ini))
-    res = cur.fetchall()
-
-    result['res'] = []
-    for elem in res:
-        result['res'].append({
-            'idPublicacion': elem[0],
-            'descripcion':elem[1]
-        })
-    con.close()
-    return respuesta(result)
+#@publicaciones.route(f"/")
+#def lis():
+#    result = autentificacion()
+#    if result['estado'] > 0:
+#        return (result)
+#    # Argumentos necesarios para listar
+#    if (request.args.get("ini") == None):
+#        return respuesta({
+#            'estado': ERR_PARAM_NEC,
+#            'mensaje': (f"Argumentos requeridos: ini")
+#        })
+#    
+#    try:
+#        ini = int(request.args.get("ini"))
+#    except:
+#        return respuesta({
+#            'estado': ERR_PARAM_NEC,
+#            'mensaje': (f'Argumentos con formato erróneo: ini')
+#        })
+#    
+#    try:
+#        con = conex()
+#        cur = con.cursor()
+#    except:
+#        return respuesta({
+#            'estado': ERR_NO_CONNECT_BD,
+#            'mensaje': (f"Problema al conectar a la BD")
+#        })
+#    
+#    cur.execute("""SELECT idPublicacion, descripcion
+#                FROM publicacion p
+#                OFFSET {ini}
+#                """.format(ini=ini))
+#    res = cur.fetchall()
+#
+#    result['res'] = []
+#    for elem in res:
+#        result['res'].append({
+#            'idPublicacion': elem[0],
+#            'descripcion':elem[1]
+#        })
+#    con.close()
+#    return respuesta(result)
 
 # # # # # # # # # # END-POINT # # # # # # # # # #
 # Nuevo registro

@@ -33,21 +33,27 @@ export const Perfil = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const [Usuario, setUsuario] = useState('') // Estado para almacenar el usuario del usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
+    const [NPost, setNPost] = useState('') // Estado para almacenar la cantidad de post del usuario
+    //const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
+    //const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
+    const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
 
-    const [Descripcion, setDescripcion] = useState('')
-    const [List, setList] = useState([])
-
-    //UseEffect
+    //UseEffect que muestra el perfil del usuario
     useEffect(() => {
+        setNPost('0') // Asignamos el valor de posts a 0 en caso de no haber posts
+        // setNSeguidores('0') // Asignamos el valor de seguidores a 0 en caso de no tener seguidores
+        // setNSeguidos('0') // Asignamos el valor de seguidos a 0 en caso de no tener seguidos
         async function ver() {
             const pet = await peticion('/perfil/ver?id=' + perfil_id)
-            //console.log(pet)
             setUsuario(pet.usuario)
             setNombre(pet.nombre)
+            if ((pet.nPost) > 0)
+                setNPost(pet.nPost)
         }
         ver()
     }, [])
 
+    //UseEffect que muestra las publicaciones de ese usuario
     useEffect(() => {
         async function ver() {
             const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
@@ -67,16 +73,17 @@ export const Perfil = () => {
                 <div className='content'>
                     <div className='details'>
                         <h2>{Usuario}<br /><span>{Nombre}</span></h2>
+                        <div className='actionBtn'>
+                            <button className='btn'>Seguir</button>
+                        </div>
                         <div className='data'>
-                            <h3>342<br /><span>Posts</span></h3>
-                            <h3>120k<br /><span>Followers</span></h3>
-                            <h3>342<br /><span>Following</span></h3>
-                            <p></p>
+                            <h3>{NPost}<br /><span>Publicaciones</span></h3>
+                            <h3>120k<br /><span>Seguidores</span></h3>
+                            <h3>342<br /><span>Siguiendo</span></h3>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div className="profile-content">
                 <h2>Publicaciones recientes</h2>
                 {List.map((elem) => (

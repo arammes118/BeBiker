@@ -209,7 +209,7 @@ def list2():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre
+    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, nPost
                 FROM usuarios
                 WHERE idUsuario = {id};
                 """)
@@ -220,10 +220,16 @@ def list2():
             'idUsuario': res[0][0],
             'mail': res[0][1],
             'usuario': res[0][2],
-            'nombre': res[0][3]
+            'nombre': res[0][3],
+            'nPost': res[0][4]
         }
     cur.close()
     return jsonify(usuario)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # PUBLICACIONES # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PUBLICACIONES
@@ -289,6 +295,11 @@ def ins():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
+    # Consulta que nos devuelve el contador de post del usuario
+    cursor.execute("SELECT nPost FROM usuarios WHERE idUsuario = %s", [idUsuario])
+    res1 = cursor.fetchone()
+    nPost = res1[0]
+    
     try:
 
         # Consulta SQL
@@ -296,6 +307,13 @@ def ins():
                 VALUES ('{0}', '{1}', '{2}')"""
                 .format(mJson['descripcion'], foto, idUsuario))
         conex.connection.commit() # Confirma la accion de inserción
+
+        # Incrementar el contador de posts del usuario
+        nPost =+ 1
+
+        # Actualizar el contador en la base de datos
+        cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
+        conex.connection.commit()
 
         return respuesta({
             'estado': EST_OK,
