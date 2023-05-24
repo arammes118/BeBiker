@@ -20,10 +20,6 @@ export const MenuLateral = () => {
     const [Nombre, setNombre] = useState('')
 
     let menuRef = useRef()
-    const rId = useRef()
-    const rMail = useRef()
-    const rUsuario = useRef()
-    const rNombre = useRef()
 
     useEffect(() => {
         let handler = (e) => {
