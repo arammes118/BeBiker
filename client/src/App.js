@@ -17,6 +17,7 @@ import { Publicaciones } from "./components/Publicaciones";
 import Subir from "./components/Subir";
 import { MenuLateral } from "./components/comun/MenuLateral";
 import { Perfil } from './components/Perfil';
+import Rutas from './components/Rutas';
 
 function App() {
   // Utilizamos el contexto para obtener el token del usuario
@@ -54,6 +55,7 @@ function App() {
             <Route index element={<Publicaciones />} />
             <Route path='/publicaciones' element={<Publicaciones />} />
             <Route path='/subir' element={<Subir />} />
+            <Route path='/rutas' element={<Rutas />} />
             <Route path='/perfil' element={<Perfil />} />
           </Route>
         </Routes>
