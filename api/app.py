@@ -17,6 +17,7 @@ from routes.publicaciones import publicaciones
 from routes.rutas import rutas
 from routes.usuario import perfil
 
+from io import BytesIO
 # Creamos la aplicación
 app = Flask(__name__)
 
@@ -249,6 +250,7 @@ def list():
             'descripcion': elem[1],
             'usuario': elem[2]
         }
+
         publicaciones.append(publicacion)
     cur.close()
     return jsonify(publicaciones)
@@ -274,7 +276,8 @@ def ins():
 
     idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
 
-    foto = request.files.get('foto')  # Accede al archivo de la foto
+    foto_data = request.data  # Accede a los datos binarios de la imagen
+    foto = BytesIO(foto_data)
     print(foto)
 
     # Creamos un cursor para la consulta
@@ -304,6 +307,50 @@ def ins():
             'mensaje': ("Error al registrar")
         })
 
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA VER PUBLICACIONES POR ID
+@app.route(f"{URL}/publicaciones/ver", methods=["GET"])
+def listP():
+    if (request.args.get("id")==None): # se necesita este argumento para la consulta
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"Argumentos requeridos: id")
+        })
+    
+    try:
+        id = int(request.args.get("id"))
+    except:
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Argumentos con formato erróneo: id")
+        })
+    
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cur.execute(f"""SELECT idPublicacion, descripcion, u.usuario
+                FROM publicaciones
+                JOIN usuario u ON u.idUsuario = cfUsuario
+                WHERE cfUsuario = {id};
+                """)
+    res = cur.fetchall()
+
+    publicaciones = []
+    for elem in res:
+        publicacion = {
+            'idPublicacion': elem[0],
+            'descripcion': elem[1],
+            'usuario': elem[2]
+        }
+
+        publicaciones.append(publicacion)
+    cur.close()
+    return jsonify(publicaciones)
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
 @app.route(f'/{URL}/productos', methods=['GET'])

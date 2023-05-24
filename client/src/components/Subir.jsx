@@ -5,6 +5,7 @@ import ConexContext from "../context/ConexContext"
 
 //IMG
 import logo from '../assets/img/BeBiker.png'
+import { Header } from './comun/Header';
 
 const Subir = () => {
     //Contexto
@@ -12,43 +13,48 @@ const Subir = () => {
     const [image, setImage] = useState(null);
     const [previewImage, setPreviewImage] = useState('')
 
-    const handleImageChange = (event) => {
-        const selectedImage = event.target.files[0];
-        console.log(event.target.files[0])
-        setImage(selectedImage);
+    const handleImageChange = (e) => {
+        const selectedImage = e.target.files[0]
+        setImage(selectedImage)
 
         if (selectedImage) {
-            const reader = new FileReader();
+            const reader = new FileReader()
             reader.onload = (e) => {
-                setPreviewImage(e.target.result);
+                setPreviewImage(e.target.result)
             };
-            reader.readAsDataURL(selectedImage);
+            reader.readAsDataURL(selectedImage)
         } else {
-            setPreviewImage('');
+            setPreviewImage('')
         }
     };
-
-    //ESTADOS
-    const [ErrDescripcion] = useState('')
 
     //REFs
     const rId = useRef()
     const rDescripcion = useRef()
     const rFoto = useRef()
 
+    async function convertImgToBlob(img) {
+        const response = await fetch(img.src);
+        const blob = await response.blob();
+        return blob;
+    }
+
     // Funcion Guardar publicacion
     async function guardarPost(event) {
         event.preventDefault()
-        console.log(perfil_id)
-        let pet = await peticion('/publicaciones/ins', {
+
+        const imgBlob = await convertImgToBlob(image);
+
+        const pet = await peticion('/publicaciones/ins', {
             method: 'POST',
             json: {
                 descripcion: rDescripcion.current.value,
-                foto: rFoto.current.files[0],
+                foto: imgBlob,
                 idUsuario: perfil_id
             }
         })
-        console.log(rFoto.current.files[0])
+        console.log(image)
+        console.log(imgBlob)
         console.log(pet)
     }
 
@@ -58,7 +64,7 @@ const Subir = () => {
                 <div className="logo">
                     <img src={logo} alt="BeBiker" />
                 </div>
-                <form onSubmit={guardarPost} enctype="multipart/form-data">
+                <form onSubmit={guardarPost} encType="multipart/form-data">
                     <div>
                         <input type='text'
                             placeholder='Descripcion'
