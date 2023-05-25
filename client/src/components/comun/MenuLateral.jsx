@@ -7,7 +7,9 @@ import perfil from '../../assets/img/perfil.png'
 import ruta from '../../assets/img/ruta.png'
 import subir from '../../assets/img/subir.png'
 import user from '../../assets/img/chema.jpg'
-import home from '../../assets/img/home.png'
+
+import home from '../../assets/img/home.svg'
+import perfil2 from '../../assets/img/person.svg'
 
 import '../../assets/css/menu.css'
 import ConexContext from '../../context/ConexContext'
@@ -57,7 +59,7 @@ export const MenuLateral = () => {
                         <DropdownItem to="/publicaciones" img={home} text={"Publicaciones"} />
                         <DropdownItem to="/subir" img={subir} text={"Subir"} />
                         <DropdownItem to="/rutas" img={ruta} text={"Rutas"} />
-                        <DropdownItem to="/perfil" img={perfil} text={"Mi Perfil"} />
+                        <DropdownItem to="/perfil" img={perfil2} text={"Mi Perfil"} />
 
                         <li className='dropdownItem' onClick={() => setToken('')}>
                             <img src={salir} alt="Salir" />
