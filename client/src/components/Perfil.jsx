@@ -16,7 +16,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import ShareIcon from '@mui/icons-material/Share'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { Box } from '@mui/material'
+import { Box, Menu, MenuItem } from '@mui/material'
 import { Header } from './comun/Header'
 
 //CSS
@@ -37,6 +37,40 @@ export const Perfil = () => {
     //const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     //const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
+    const [PostSelect, setPostSelect] = useState(null) // Estado que almacena el post que se ha seleccionado
+
+    const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget)
+    }
+
+    const handleClose = () => {
+        setAnchorEl(null)
+    }
+
+    // Función para borrar una publicación
+    const borrar = async (id) => {
+        const pet = await peticion('/publicaciones/del', {
+            method: 'POST',
+            json: {
+                id: id
+            }
+        })
+        if (pet.mensaje === 'OK') {
+            // La publicación se eliminó correctamente
+            // Realiza las acciones necesarias, como actualizar la lista de publicaciones
+            console.log('Publicación elim inada');
+            // Actualiza la lista de publicaciones
+            setList(prevList => prevList.filter(elem => elem.idPublicacion !== id));
+          } else {
+            // Hubo un error al eliminar la publicación
+            console.log('Error al eliminar la publicación');
+          }
+        setPostSelect(id)
+        console.log(id)
+        console.log(pet)
+    }
 
     //UseEffect que muestra el perfil del usuario
     useEffect(() => {
@@ -61,7 +95,7 @@ export const Perfil = () => {
             console.log(pet)
         }
         ver()
-    }, [])
+    }, [PostSelect])
 
     return (
         <>
@@ -87,15 +121,25 @@ export const Perfil = () => {
             <div className="profile-content">
                 <h2>Publicaciones recientes</h2>
                 {List.map((elem) => (
-                    <Card className='cardPost'>
+                    <Card key={elem.idPublicacion} className='cardPost'>
                         <CardHeader
                             avatar={
                                 <Avatar src={logo} />
                             }
                             action={
-                                <IconButton aria-label="settings">
-                                    <MoreVertIcon />
-                                </IconButton>
+                                <div>
+                                    <IconButton aria-label="settings" onClick={handleClick}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                    <Menu
+                                        anchorEl={anchorEl}
+                                        open={Boolean(anchorEl)}
+                                        onClose={handleClose}
+                                    >
+                                        <MenuItem onClick={() => borrar(elem.idPublicacion)}>Eliminar publicación</MenuItem>
+                                    </Menu>
+                                </div>
+
                             }
                             title={<span style={{ fontWeight: 'bold' }}>{Usuario}</span>}
                         />
