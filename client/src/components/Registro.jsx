@@ -13,7 +13,7 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from "../context/ConexContext"
 import { Link, useNavigate } from 'react-router-dom'
 
-const Registro = () => {
+const Registro = (props) => {
     // ESTADOS
     const [ErrMail, setErrorMail] = useState('') //Cualquier error en el mail
     const [ErrPsw, setErrorPsw] = useState('') //Cualquier error en la psw
@@ -59,13 +59,19 @@ const Registro = () => {
             setErrorFechaNac('Debes ser mayor a 16 años')
         else {
             let pet
-            // Comprobamos que no haya un usuario con ese mail ya
+            // Comprobamos que no haya un usuario con ese mail
             pet = await peticion(`/registro/rep_mail?mail=${rMail.current.value}`)
             if (!pet?.estado ?? 1) //Estado OK
                 if ((pet?.res?.idUsuario ?? 1) > -1) {
                     setErrorMail("Ese correo electrónico ya está registrado")
                     return
                 }
+            pet = await peticion(`/registro/rep_usuario?usuario=${rUsuario.current.value}`)
+                if (!pet?.estado ?? 1) //Estado OK
+                    if ((pet?.res?.idUsuario ?? 1) > -1) {
+                        setErrorUsuario("Ese nombre de usuario ya está registrado")
+                        return
+                    }
 
             pet = await peticion('/registro', {
                 method: 'POST',

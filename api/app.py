@@ -159,7 +159,7 @@ def repMail():
             'estado': ERR_PARAM_NEC,
             'mensaje': (f'Argumentos requeridos: mail')
         })
-    
+
     mail = request.args.get("mail")
     try:
         cursor = conex.connection.cursor()
@@ -169,9 +169,41 @@ def repMail():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cursor.execute("SELECT idUsuario FROM usuarios WHERE mail = %s;", (mail,))
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE mail = %s;", (mail, ))
     res = cursor.fetchone()
+    if res == None:
+        res = [-1]
+    
+    result = {
+        'res': {
+            'idUsuario': res[0]
+        }
+    }
+    cursor.close()
+    return respuesta(result)
 
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA COMPROBAR USUARIO NO REPETIDO
+@app.route(f'/{URL}/registro/rep_usuario')
+def repUser():
+    # Argumentos necesarios
+    if (request.args.get("usuario") == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f'Argumentos requeridos: usuario')
+        })
+
+    usuario = request.args.get("usuario")
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE usuario = %s;", (usuario, ))
+    res = cursor.fetchone()
     if res == None:
         res = [-1]
     
@@ -309,7 +341,7 @@ def ins():
         conex.connection.commit() # Confirma la accion de inserción
 
         # Incrementar el contador de posts del usuario
-        nPost =+ 1
+        nPost += 1
 
         # Actualizar el contador en la base de datos
         cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
@@ -327,7 +359,7 @@ def ins():
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PUBLICACIONES POR ID
-@app.route(f"{URL}/publicaciones/ver", methods=["GET"])
+@app.route(f"/{URL}/publicaciones/ver", methods=["GET"])
 def listP():
     if (request.args.get("id")==None): # se necesita este argumento para la consulta
         return respuesta({
@@ -369,6 +401,67 @@ def listP():
         publicaciones.append(publicacion)
     cur.close()
     return jsonify(publicaciones)
+
+# # # # # # # # END-POINT # # # # # # # #
+# METODO BORRAR PUBLICACION
+@app.route(f'/{URL}/publicaciones/del', methods=['POST'])
+def bor2():
+    mJson = request.json #JSON
+    if (mJson==None): # se necesita este argumento para la consulta
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"JSON requerido")
+        })
+        
+    if ('id' not in mJson): # se necesita este argumento para la consulta
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje':(f"Argumentos requeridos: id")
+        })
+        
+    try:
+        id = int(mJson['id'])
+    except:
+        return respuesta({
+            'estado': ERR_PARAM_ERR,
+            'mensaje':(f"Argumentos con formato erróneo: id")
+        })
+    
+    # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    # Obtenemos el ID del usuario a través de la clave foránea
+    cursor.execute(f"SELECT cfUsuario FROM publicaciones WHERE idPublicacion = {id}")
+    res1 = cursor.fetchone()
+    idUsuario = res1[0]
+
+    # Obtener el valor actual de nPost del usuario
+    cursor.execute(f"SELECT nPost FROM usuarios WHERE idUsuario = {idUsuario}")
+    res2 = cursor.fetchone()
+    nPost = res2[0]
+    print(idUsuario)
+    print(nPost)
+    
+    try:
+        # Eliminamos la publicación
+        cursor.execute(f"DELETE FROM publicaciones WHERE idPublicacion = {id}")
+
+        # Decrementamos el contador de posts del usuario
+        nPost -= 1
+
+        # Actualizamos el contador de publicaciones del usuario
+        cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
+
+        cursor.close()
+        return jsonify({'mensaje': 'OK'})
+    except:
+        return jsonify({'mensaje': 'NO'})
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA LISTAR PRODUCTOS
