@@ -30,17 +30,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box } from '@mui/material'
 import { Header } from './comun/Header'
 
-const ExpandMore = styled((props) => {
-    const { expand, ...other } = props;
-    return <IconButton {...other} />;
-})(({ theme, expand }) => ({
-    transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-        duration: theme.transitions.duration.shortest,
-    }),
-}));
-
 export const Publicaciones = () => {
     //Contexto
     const { peticion } = useContext(ConexContext)
@@ -73,7 +62,7 @@ export const Publicaciones = () => {
             <Header />
             <div>
                 {List.map((elem) => (
-                    <Card sx={{ maxWidth: 345, minWidth: 345 }}>
+                    <Card key={elem.idPublicacion} sx={{ maxWidth: 345, minWidth: 345 }}>
                         <CardHeader
                             avatar={
                                 <Avatar src={logo} />
