@@ -194,14 +194,14 @@ def repMail():
 # RUTA COMPROBAR USUARIO NO REPETIDO
 @app.route(f'/{URL}/registro/rep_usuario')
 def repUser():
-    # Argumentos necesarios
-    if (request.args.get("usuario") == None):
+    # Verifica si se proporciona el argumento 'usuario'
+    usuario = request.args.get("usuario")
+    if usuario is None:
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: usuario')
+            'mensaje': 'Argumentos requeridos: usuario'
         })
 
-    usuario = request.args.get("usuario")
     try:
         cursor = conex.connection.cursor()
     except:
@@ -210,18 +210,21 @@ def repUser():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cursor.execute("SELECT idUsuario FROM usuarios WHERE usuario = %s;", (usuario, ))
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE usuario = %s;", (usuario,))
     res = cursor.fetchone()
-    if res == None:
-        res = [-1]
-    
-    result = {
-        'res': {
-            'idUsuario': res[0]
-        }
-    }
-    cursor.close()
-    return respuesta(result)
+
+    if res is None:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK',
+            'res': True
+        })
+    else:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK',
+            'res': False
+        })
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PERFIL POR ID

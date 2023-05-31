@@ -66,20 +66,27 @@ const Registro = () => {
             // Comprobamos que no haya un usuario con ese mail
             pet = await peticion(`/registro/rep_mail?mail=${rMail.current.value}`)
             if (!pet.res) {
-                setErrorMail("Ese correo electrónico ya está registrado")
+                setErrorMail("Ese correo electrónico ya está registrado") // En caso de haberlo, muestra error
             } else {
-                pet = await peticion('/registro', {
-                    method: 'POST',
-                    json: {
-                        mail: rMail.current.value,
-                        usuario: rUsuario.current.value,
-                        nombre: rNombre.current.value.charAt(0).toUpperCase() + rNombre.current.value.slice(1),
-                        apellido: rApellido.current.value.charAt(0).toUpperCase() + rApellido.current.value.slice(1),
-                        fecha: rFechaNac.current.value,
-                        psw: rPsw.current.value
-                    }
-                })
-                console.log(pet)
+                // Comprobamos que no haya un usuario con ese nombre de usuario
+                pet = await peticion(`/registro/rep_usuario?usuario=${rUsuario.current.value}`)
+                if (!pet.res) {
+                    setErrorUsuario("Ese nombre de usuario ya está registrado") // En caso de haberlo, muestra error
+                } else {
+                    // Si no hay ningún error anterior, registra al usuario
+                    pet = await peticion('/registro', {
+                        method: 'POST',
+                        json: {
+                            mail: rMail.current.value,
+                            usuario: rUsuario.current.value,
+                            nombre: rNombre.current.value.charAt(0).toUpperCase() + rNombre.current.value.slice(1),
+                            apellido: rApellido.current.value.charAt(0).toUpperCase() + rApellido.current.value.slice(1),
+                            fecha: rFechaNac.current.value,
+                            psw: rPsw.current.value
+                        }
+                    })
+                    console.log(pet)
+                }
             }
         }
     }
