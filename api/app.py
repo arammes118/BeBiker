@@ -1,6 +1,5 @@
 # Importamos Flask
 from flask import Flask, request, jsonify
-import base64
 
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
@@ -18,6 +17,7 @@ from routes.rutas import rutas
 from routes.usuario import perfil
 
 from io import BytesIO
+
 # Creamos la aplicación
 app = Flask(__name__)
 
@@ -123,6 +123,11 @@ def registro():
             'estado': ERR_PARAM_NEC,
             'mensaje': (f"Datos requeridos: nombre")
         })
+    if ('apellido' not in mJson):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f"Datos requeridos: apellido")
+        })
     if ('fecha' not in mJson):
         return respuesta({
             'estado': ERR_PARAM_NEC,
@@ -140,9 +145,9 @@ def registro():
     
     try:
         # Consulta SQL
-        cursor.execute("""INSERT INTO usuarios (mail, psw, usuario, nombre, fecha) 
-                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"""
-                       .format(mJson['mail'], mJson['psw'], mJson['usuario'], mJson['nombre'], mJson['fecha']))
+        cursor.execute("""INSERT INTO usuarios (mail, psw, usuario, nombre, apellido, fecha) 
+                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')"""
+                       .format(mJson['mail'], mJson['psw'], mJson['usuario'], mJson['nombre'], mJson['apellido'], mJson['fecha']))
         conex.connection.commit() # Confirma la accion de inserción
 
         return jsonify({'mensaje': 'OK'})
@@ -153,34 +158,37 @@ def registro():
 # RUTA COMPROBAR MAIL NO REPETIDO
 @app.route(f'/{URL}/registro/rep_mail')
 def repMail():
-    # Argumentos necesarios
-    if (request.args.get("mail") == None):
+    # Verifica si se proporciona el argumento 'mail'
+    mail = request.args.get("mail")
+    if mail is None:
         return respuesta({
             'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: mail')
+            'mensaje': 'Argumentos requeridos: mail'
         })
 
-    mail = request.args.get("mail")
     try:
         cursor = conex.connection.cursor()
     except:
         return respuesta({
             'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
+            'mensaje': 'Problema al conectar a la BD'
         })
-    
-    cursor.execute("SELECT idUsuario FROM usuarios WHERE mail = %s;", (mail, ))
+
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE mail = %s;", (mail,))
     res = cursor.fetchone()
-    if res == None:
-        res = [-1]
-    
-    result = {
-        'res': {
-            'idUsuario': res[0]
-        }
-    }
-    cursor.close()
-    return respuesta(result)
+
+    if res is None:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK',
+            'res': True
+        })
+    else:
+        return respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK',
+            'res': False
+        })
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA COMPROBAR USUARIO NO REPETIDO
@@ -241,7 +249,7 @@ def list2():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, nPost
+    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, apellido, nPost
                 FROM usuarios
                 WHERE idUsuario = {id};
                 """)
@@ -253,7 +261,8 @@ def list2():
             'mail': res[0][1],
             'usuario': res[0][2],
             'nombre': res[0][3],
-            'nPost': res[0][4]
+            'apellido': res[0][4],
+            'nPost': res[0][5]
         }
     cur.close()
     return jsonify(usuario)
@@ -464,8 +473,9 @@ def bor2():
         return jsonify({'mensaje': 'NO'})
 
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # RUTAS # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 

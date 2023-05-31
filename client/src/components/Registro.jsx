@@ -13,11 +13,12 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from "../context/ConexContext"
 import { Link, useNavigate } from 'react-router-dom'
 
-const Registro = (props) => {
+const Registro = () => {
     // ESTADOS
     const [ErrMail, setErrorMail] = useState('') //Cualquier error en el mail
     const [ErrPsw, setErrorPsw] = useState('') //Cualquier error en la psw
     const [ErrNombre, setErrorNombre] = useState('') //Cualquier error en el nombre
+    const [ErrApellido, setErrorApellido] = useState('') //Cualquier error en el apellido
     const [ErrUsuario, setErrorUsuario] = useState('') //Cualquier error en el usuario
     const [ErrFechaNac, setErrorFechaNac] = useState('') //Cualquier error en la fecha
 
@@ -27,6 +28,7 @@ const Registro = (props) => {
     const rPsw = useRef()
     const rUsuario = useRef()
     const rNombre = useRef()
+    const rApellido = useRef()
     const rFechaNac = useRef()
 
     //Contexto que manejara las peticiones a la BD
@@ -53,6 +55,8 @@ const Registro = (props) => {
             setErrorUsuario('Introduce un nombre de usuario')
         else if (rNombre.current.value === '')
             setErrorNombre('Introduce un nombre')
+        else if (rApellido.current.value === '')
+            setErrorNombre('Introduce un apellido')
         else if (rFechaNac.current.value === '' || !moment(rFechaNac.current.value).isBefore(moment()) || !moment(rFechaNac.current.value).isAfter(fechaLimite))
             setErrorFechaNac('Introduce una fecha de nacimiento válida')
         else if (!moment(rFechaNac.current.value).isBefore(edadMinima))
@@ -61,30 +65,22 @@ const Registro = (props) => {
             let pet
             // Comprobamos que no haya un usuario con ese mail
             pet = await peticion(`/registro/rep_mail?mail=${rMail.current.value}`)
-            if (!pet?.estado ?? 1) //Estado OK
-                if ((pet?.res?.idUsuario ?? 1) > -1) {
-                    setErrorMail("Ese correo electrónico ya está registrado")
-                    return
-                }
-            pet = await peticion(`/registro/rep_usuario?usuario=${rUsuario.current.value}`)
-                if (!pet?.estado ?? 1) //Estado OK
-                    if ((pet?.res?.idUsuario ?? 1) > -1) {
-                        setErrorUsuario("Ese nombre de usuario ya está registrado")
-                        return
+            if (!pet.res) {
+                setErrorMail("Ese correo electrónico ya está registrado")
+            } else {
+                pet = await peticion('/registro', {
+                    method: 'POST',
+                    json: {
+                        mail: rMail.current.value,
+                        usuario: rUsuario.current.value,
+                        nombre: rNombre.current.value.charAt(0).toUpperCase() + rNombre.current.value.slice(1),
+                        apellido: rApellido.current.value.charAt(0).toUpperCase() + rApellido.current.value.slice(1),
+                        fecha: rFechaNac.current.value,
+                        psw: rPsw.current.value
                     }
-
-            pet = await peticion('/registro', {
-                method: 'POST',
-                json: {
-                    mail: rMail.current.value,
-                    usuario: rUsuario.current.value,
-                    nombre: rNombre.current.value,
-                    fecha: rFechaNac.current.value,
-                    psw: rPsw.current.value
-                }
-            })
-            console.log(pet); // Verifica la estructura de la respuesta en la consola
-            navigate("/login")
+                })
+                console.log(pet)
+            }
         }
     }
 
@@ -115,6 +111,13 @@ const Registro = (props) => {
                             ref={rNombre}
                             onChange={() => setErrorNombre('')} />
                         <p className='error'>{ErrNombre}</p>
+                    </div>
+                    <div className="input-group">
+                        <input type='text'
+                            placeholder='Apellido'
+                            ref={rApellido}
+                            onChange={() => setErrorApellido('')} />
+                        <p className='error'>{ErrApellido}</p>
                     </div>
                     <div className="input-group">
                         <input type='date'
