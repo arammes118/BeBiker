@@ -35,8 +35,7 @@ import { Box } from '@mui/material'
 import { Header } from './comun/Header'
 
 export const Publicaciones = () => {
-    const { peticion } = useContext(ConexContext) // Contexto
-    const { idReg } = useParams()
+    const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const [active, setActive] = useState(false)
 
     // Estados
@@ -50,13 +49,17 @@ export const Publicaciones = () => {
     // UseEffects
     useEffect(() => {
         async function listar() {
-            const pet = await peticion("/publicaciones")
-            setList(pet)
-            console.log(pet)
+            const pet = await peticion("/publicaciones") // Peticion de publicaciones
+            /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
+            que inicia sesión */
+            const filtroPosts = pet.filter(publicacion => {
+                return publicacion.cfUsuario !== perfil_id
+            })
+            setList(filtroPosts)
         }
 
         listar()
-    }, [peticion])
+    }, [perfil_id, peticion])
 
     return (
         <>

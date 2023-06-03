@@ -316,7 +316,7 @@ def list():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute("""SELECT idPublicacion, descripcion, u.usuario
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, cfUsuario
                 FROM publicaciones p
                 JOIN usuarios u ON p.cfUsuario = u.idUsuario
                 """)
@@ -327,7 +327,8 @@ def list():
         publicacion = {
             'idPublicacion': elem[0],
             'descripcion': elem[1],
-            'usuario': elem[2]
+            'usuario': elem[2],
+            'cfUsuario': elem[3]
         }
 
         publicaciones.append(publicacion)
@@ -355,9 +356,9 @@ def ins():
 
     idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
 
-    foto_data = request.data  # Accede a los datos binarios de la imagen
-    foto = BytesIO(foto_data)
-    print(foto)
+    # foto_data = request.data  # Accede a los datos binarios de la imagen
+    # foto = BytesIO(foto_data)
+    # print(foto)
 
     # Creamos un cursor para la consulta
     try:
@@ -376,9 +377,9 @@ def ins():
     try:
 
         # Consulta SQL
-        cursor.execute("""INSERT INTO publicaciones (descripcion, foto, cfUsuario) 
-                VALUES ('{0}', '{1}', '{2}')"""
-                .format(mJson['descripcion'], foto, idUsuario))
+        cursor.execute("""INSERT INTO publicaciones (descripcion, cfUsuario) 
+                VALUES ('{0}', '{1}')"""
+                .format(mJson['descripcion'], idUsuario))
         conex.connection.commit() # Confirma la accion de inserción
 
         # Incrementar el contador de posts del usuario
