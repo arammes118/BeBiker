@@ -5,17 +5,17 @@ import '../assets/css/rutas.css'
 
 export default function Rutas() {
   return (
-    <div class="tarjeta">
-      <div class="contenido">
-        <div class="ladoIzq">
-          <h2 class="titulo">Ruta por el tranco</h2>
-          <div class="cuerpo">
+    <div className="tarjeta">
+      <div className="contenido">
+        <div className="ladoIzq">
+          <h2 className="titulo">Ruta por el tranco</h2>
+          <div className="cuerpo">
             <p>Ruta de curvas perfecta</p>
-            <a class="btn" href="#">Más info</a>
-            <a class="btn" href="#">Ver perfil</a>
+            <a className="btn" href="#">Más info</a>
+            <a className="btn" href="#">Ver perfil</a>
           </div>
         </div>
-        <div class="ladoDer">
+        <div className="ladoDer">
           <img src={chema} /></div>
       </div>
     </div>

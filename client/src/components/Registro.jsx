@@ -86,6 +86,7 @@ const Registro = () => {
                         }
                     })
                     console.log(pet)
+                    navigate("/")
                 }
             }
         }
