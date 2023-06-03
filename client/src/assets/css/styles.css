@@ -86,3 +86,91 @@ body {
   text-align: center;
   font-size: 12px;
 }
+
+
+/* ------ SUBIR -------- */
+.principal {
+  width: 100%;
+}
+
+.contenido {
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #dbdbdb;
+  padding: 20px;
+}
+
+.actionBtn {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  opacity: 0.8;
+}
+
+.btnSubir {
+  width: 100%;
+  z-index: 20;
+  padding: 10px 50px;
+  border: 2 px solid #000;
+  outline: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 500;
+  background: #F20505;
+  color: #fff;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  opacity: 2;
+}
+
+.map-container {
+  width: 400px; /* Ancho deseado */
+  height: 300px; /* Altura deseada */
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.map-container .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.map-container .map-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.map-container .map-overlay h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+}
+
+.map-container .map-overlay p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.map-container .map-overlay .button {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #4285F4;
+  color: #FFF;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.map-container .map-overlay .button:hover {
+  background-color: #3367D6;
+}

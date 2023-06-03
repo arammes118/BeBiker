@@ -3,26 +3,29 @@ import { Link, Outlet } from 'react-router-dom'
 
 //IMGs
 import salir from '../../assets/img/salir.png'
-import perfil from '../../assets/img/perfil.png'
 import ruta from '../../assets/img/ruta.png'
 import subir from '../../assets/img/subir.png'
 import user from '../../assets/img/chema.jpg'
-
 import home from '../../assets/img/home.svg'
-import perfil2 from '../../assets/img/person.svg'
+import perfil from '../../assets/img/person.svg'
 
+// CSS
 import '../../assets/css/menu.css'
+
+// Contexto
 import ConexContext from '../../context/ConexContext'
 
 export const MenuLateral = () => {
-    //Contexto para asignar el Token a '' cuando cierre sesión
-    const { setToken, peticion, perfil_id } = useContext(ConexContext)
-    const [open, setOpen] = useState(false)
-    const [Usuario, setUsuario] = useState('')
-    const [Nombre, setNombre] = useState('')
+    const { setToken, peticion, perfil_id } = useContext(ConexContext) // Contexto para asignar el Token a '' cuando cierre sesión
+    const [open, setOpen] = useState(false) // Estado para saber si el menú esta abierto
+    const [Usuario, setUsuario] = useState('') // Estado para almacenar el nombre de usuario
+    const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
+    const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
 
-    let menuRef = useRef()
+    // REFs
+    let menuRef = useRef() // Referencia del menú
 
+    // UseEffects
     useEffect(() => {
         let handler = (e) => {
             if (!menuRef.current.contains(e.target)) {
@@ -42,25 +45,25 @@ export const MenuLateral = () => {
             console.log(pet)
             setUsuario(pet.usuario)
             setNombre(pet.nombre)
+            setApellido(pet.apellido)
         }
         ver()
-    }, [])
+    }, [perfil_id, peticion])
 
     return (
         <>
             <div className='menu-container' ref={menuRef}>
                 <div className='menu-trigger' onClick={() => { setOpen(!open) }}>
-                    <img src={user}></img>
+                    <img src={user} alt={'Perfil de ' + Usuario}></img>
                 </div>
 
                 <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`} >
-                    <h3>{Usuario}<br /><span>{Nombre}</span></h3>
+                    <h3>{Usuario}<br /><span>{Nombre + ' ' + Apellido}</span></h3>
                     <ul>
                         <DropdownItem to="/publicaciones" img={home} text={"Publicaciones"} />
-                        <DropdownItem to="/subir" img={subir} text={"Subir"} />
                         <DropdownItem to="/rutas" img={ruta} text={"Rutas"} />
-                        <DropdownItem to="/perfil" img={perfil2} text={"Mi Perfil"} />
-
+                        <DropdownItem to="/subir" img={subir} text={"Subir"} />
+                        <DropdownItem to="/perfil" img={perfil} text={"Mi Perfil"} />
                         <li className='dropdownItem' onClick={() => setToken('')}>
                             <img src={salir} alt="Salir" />
                             <Link to="/login">Cerrar sesión</Link>
@@ -75,10 +78,11 @@ export const MenuLateral = () => {
     )
 }
 
+// Función que nos devolverá la ruta y la img de cada opción del menú
 function DropdownItem(props) {
     return (
         <li className='dropdownItem'>
-            <img src={props.img}></img>
+            <img src={props.img} alt=""></img>
             <Link to={props.to}>{props.text}</Link>
         </li>
     );
