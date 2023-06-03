@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 // Contexto
 import ConexContext from "../context/ConexContext"
@@ -6,7 +6,27 @@ import ConexContext from "../context/ConexContext"
 // IMG
 import logo from '../assets/img/BeBiker.png'
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+// MUI
+import Card from '@mui/material/Card'
+import CardHeader from '@mui/material/CardHeader'
+import CardMedia from '@mui/material/CardMedia'
+import CardContent from '@mui/material/CardContent'
+import CardActions from '@mui/material/CardActions'
+import Avatar from '@mui/material/Avatar'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
+import ShareIcon from '@mui/icons-material/Share'
+import { Box } from '@mui/material'
+
+//CSS
+import '../assets/css/perfil.css'
+
+//IMGs
+import chema from '../assets/img/chema.jpg'
+
+
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+
 
 // CSS
 import '../assets/css/styles.css'
@@ -15,6 +35,10 @@ const Subir = () => {
     //Contexto
     const { peticion, perfil_id } = useContext(ConexContext)
     const [image, setImage] = useState(null);
+
+    const [ErrSubida, setErrorSubida] = useState('') //Cualquier error en la subida del post
+    const [OkSubida, setOkSubida] = useState('') // Subida del post OK
+    const [Usuario, setUsuario] = useState('') // Usuario
     const [previewImage, setPreviewImage] = useState('')
     const [mostrarFormPost, setMostrarFormPost] = useState(true);
 
@@ -58,20 +82,35 @@ const Subir = () => {
     async function guardarPost(event) {
         event.preventDefault()
 
-        const imgBlob = await convertImgToBlob(image);
+        //const imgBlob = await convertImgToBlob(image);
 
         const pet = await peticion('/publicaciones/ins', {
             method: 'POST',
             json: {
                 descripcion: rDescripcion.current.value,
-                foto: imgBlob,
+                //foto: imgBlob,
                 idUsuario: perfil_id
             }
+
         })
-        console.log(image)
-        console.log(imgBlob)
+        if (pet.res) {
+            setErrorSubida("ERROR al subir la publicación")
+        } else {
+            setOkSubida("Publicación añadida con éxito")
+        }
+        //console.log(image)
+        //console.log(imgBlob)
         console.log(pet)
     }
+
+    useEffect(() => {
+        async function ver() {
+            const pet = await peticion('/perfil/ver?id=' + perfil_id)
+            setUsuario(pet.usuario)
+        }
+        ver()
+    })
+
 
     // Funcion Guardar Ruta
     async function guardarRuta(event) {
@@ -121,45 +160,69 @@ const Subir = () => {
                 <button className='btnSubir' onClick={() => handleBoton1Click()}>Subir Publicación</button>
                 <button className='btnSubir' onClick={() => handleBoton2Click()}>Subir Ruta</button>
             </div>
-            <div className="contenido">
+            <div className="contenido2">
                 {mostrarFormPost ? (
-                    <div>
+                    <div className='contenido2'>
                         <form onSubmit={guardarPost} encType="multipart/form-data">
-                            <div>
-                                <input
-                                    type='text'
-                                    placeholder='Descripcion'
-                                    ref={rDescripcion}
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="image">Selecciona una imagen:</label>
+                            <div className="form-group">
+                                <label htmlFor="image">Seleccionar foto:</label>
                                 <input
                                     type="file"
-                                    name="foto"
-                                    onChange={handleImageChange}
-                                    ref={rFoto}
+                                    id="image"
+                                    name="image"
                                     accept="image/*"
                                     required
-                                />
+                                    onChange={handleImageChange}
+                                    ref={rFoto} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="caption">Descripción:</label>
+                                <textarea
+                                    id="caption"
+                                    name="caption"
+                                    rows="3"
+                                    required
+                                    ref={rDescripcion}
+                                >
+                                </textarea>
+                            </div>
+                            <button className='btnSubir' type="submit">Subir</button>
+                            <div className={ErrSubida ? 'error' : OkSubida ? 'success' : ''}>
+                                {ErrSubida && <p className='error1'>{ErrSubida}</p>}
+                                {OkSubida && <p className='success1'>{OkSubida}</p>}
                             </div>
 
-                            <div>
-                                <button type="submit">Subir foto</button>
-                            </div>
+                            {previewImage && rDescripcion.current.value && (
+                                <>
+                                    <h2>Previsualización</h2>
+                                    <Card style={{ width: '400px' }}>
+                                        <CardHeader
+                                            avatar={
+                                                <Avatar src={logo} />
+                                            }
+                                            title={<span style={{ fontWeight: 'bold' }}>{Usuario}</span>}
+                                        />
+                                        <CardMedia
+                                            component="img"
+                                            width="100%"
+                                            height="100%"
+                                            image={previewImage}
+                                        />
+
+                                        <CardContent>
+                                            <Box display="flex" alignItems="center">
+                                                <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
+                                                    {Usuario}
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {rDescripcion.current.value}
+                                                </Typography>
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </>
+                            )}
                         </form>
-
-                        <h2>Previsualización</h2>
-                        {previewImage && (
-                            <div>
-                                <img
-                                    src={previewImage}
-                                    alt="Preview"
-                                    style={{ maxWidth: '300px', maxHeight: '300px' }}
-                                />
-                            </div>
-                        )}
                     </div>
                 ) : (
                     <form onSubmit={guardarRuta}>
