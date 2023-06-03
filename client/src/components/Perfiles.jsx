@@ -1,5 +1,5 @@
-// Importaciones REACT
 import React, { useContext, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 // CARD POST MATERIAL UI
 import { styled } from '@mui/material/styles'
@@ -18,20 +18,17 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box, Menu, MenuItem } from '@mui/material'
 import { Header } from './comun/Header'
-
-//CSS
-import '../assets/css/perfil.css'
-
-//IMGs
+import fer from '../assets/img/fer.jpg'
 import logo from '../assets/img/BeBiker.png'
-import chema from '../assets/img/chema.jpg'
 
 // Contexto
 import ConexContext from '../context/ConexContext'
 
-export const Perfil = () => {
-    const { peticion, perfil_id } = useContext(ConexContext) // Contexto
+export const Perfiles = () => {
+    const { peticion } = useContext(ConexContext) // Contexto
+    const { userId } = useParams() // Cogemos el perfil del usuario de los parametros
     const [Usuario, setUsuario] = useState('') // Estado para almacenar el usuario del usuario
+    const [Id, setId] = useState('') // Estado para almacernar el id del usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
     const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
     const [NombreComp, setNombreComp] = useState('') // Estado para almacenar el nombre completo del usuario
@@ -40,39 +37,12 @@ export const Perfil = () => {
     const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
-    const [PostSelect, setPostSelect] = useState(null) // Estado que almacena el post que se ha seleccionado
 
-    const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-        setAnchorEl(null)
-    }
-
-    // Función para borrar una publicación
-    const borrar = async (id) => {
-        const pet = await peticion('/publicaciones/del', {
-            method: 'POST',
-            json: {
-                id: id
-            }
-        })
-        if (pet.estado)
-            return
-
-    }
-
-    //UseEffect que muestra el perfil del usuario
+    //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
-        setNPost('0') // Asignamos el valor predeterminado de posts a 0
-        setNRutas('0') // Asignamos el valor predeterminado de rutas a 0
-        setNSeguidores('0') // Asignamos el valor predeterminado de seguidores a 0
-        setNSeguidos('0') // Asignamos el valor predeterminado de seguidos a 0
         async function ver() {
-            const pet = await peticion('/perfil/ver?id=' + perfil_id)
+            const pet = await peticion(`/perfil/${userId}`)
+            setId(pet.idUsuario)
             setUsuario(pet.usuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
@@ -81,28 +51,28 @@ export const Perfil = () => {
                 setNPost(pet.nPost)
         }
         ver()
-    }, [Apellido, Nombre, perfil_id, peticion])
+    }, [Apellido, Nombre, userId, peticion])
 
     //UseEffect que muestra las publicaciones de ese usuario
     useEffect(() => {
         async function ver() {
-            const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
+            const pet = await peticion('/publicaciones/ver?id=' + Id)
             setList(pet)
             console.log(pet)
         }
         ver()
-    }, [perfil_id, peticion])
+    }, [Id, peticion])
 
     return (
         <>
             <div className='card'>
                 <div className='lines'></div>
                 <div className='imgBx'>
-                    <img src={chema} alt={'Perfil de ' + Usuario} />
+                    <img src={fer} alt={'Perfil de ' + userId} />
                 </div>
                 <div className='content'>
                     <div className='details'>
-                        <h2>{Usuario}<br /><span>{NombreComp}</span></h2>
+                        <h2>{userId}<br /><span>{NombreComp}</span></h2>
                         <div className='actionBtn'>
                             <button className='btn'>Seguir</button>
                         </div>
@@ -124,22 +94,7 @@ export const Perfil = () => {
                                 avatar={
                                     <Avatar src={logo} />
                                 }
-                                action={
-                                    <div>
-                                        <IconButton aria-label="settings" onClick={handleClick}>
-                                            <MoreVertIcon />
-                                        </IconButton>
-                                        <Menu
-                                            anchorEl={anchorEl}
-                                            open={Boolean(anchorEl)}
-                                            onClose={handleClose}
-                                        >
-                                            <MenuItem onClick={() => borrar(elem.idPublicacion)}>Eliminar publicación</MenuItem>
-                                        </Menu>
-                                    </div>
-
-                                }
-                                title={<span style={{ fontWeight: 'bold' }}>{Usuario}</span>}
+                                title={<span style={{ fontWeight: 'bold' }}>{userId}</span>}
                             />
                             <CardMedia
                                 component="img"
@@ -175,5 +130,4 @@ export const Perfil = () => {
             </div>
         </>
     )
-
 }

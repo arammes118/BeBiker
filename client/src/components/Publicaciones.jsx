@@ -1,6 +1,6 @@
 // Importaciones REACT
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 // Importación Contexto
 import ConexContext from '../context/ConexContext'
@@ -73,13 +73,16 @@ export const Publicaciones = () => {
                                     <ShareIcon />
                                 </IconButton>
                             }
-                            title={<span style={{ fontWeight: 'bold' }}>{elem.usuario}</span>}
+                            title={
+                                <Link to={`/perfil/${elem.usuario}`} style={{ textDecoration: 'none' }}>
+                                    <span style={{ fontWeight: 'bold' }}>{elem.usuario}</span>
+                                </Link>}
                         />
                         <CardMedia
                             component="img"
                             width="100%"
                             height="100%"
-                            objectFit= 'contain'
+                            objectFit='contain'
                             image={fer}
                         />
                         <CardActions disableSpacing>
@@ -97,9 +100,11 @@ export const Publicaciones = () => {
 
                         <CardContent>
                             <Box display="flex" alignItems="center">
-                                <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
-                                    {elem.usuario}
-                                </Typography>
+                                <Link to={`/perfil/${elem.usuario}`} style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                                    <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
+                                        {elem.usuario}
+                                    </Typography>
+                                </Link>
                                 <Typography variant="body1">
                                     {elem.descripcion}
                                 </Typography>

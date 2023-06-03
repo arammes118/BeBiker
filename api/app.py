@@ -270,6 +270,35 @@ def list2():
     cur.close()
     return jsonify(usuario)
 
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA VER PERFIL DE OTRO USUARIO
+@app.route(f"{URL}/perfil/<string:usuario>", methods=["GET"])
+def list3(usuario):
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f"Problema al conectar a la BD")
+        })
+    
+    cur.execute("""SELECT idUsuario, mail, usuario, nombre, apellido, nPost
+                FROM usuarios
+                WHERE usuario = %s;
+                """, (usuario,))
+    res = cur.fetchall()
+
+    if len(res) > 0:
+        usuario = {
+            'idUsuario': res[0][0],
+            'mail': res[0][1],
+            'usuario': res[0][2],
+            'nombre': res[0][3],
+            'apellido': res[0][4],
+            'nPost': res[0][5]
+        }
+    cur.close()
+    return jsonify(usuario)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # PUBLICACIONES # # # # # # # # # # # # #
