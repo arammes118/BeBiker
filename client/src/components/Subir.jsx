@@ -186,16 +186,10 @@ const Subir = () => {
                                 >
                                 </textarea>
                             </div>
-                            <button className='btnSubir' type="submit">Subir</button>
-                            <div className={ErrSubida ? 'error' : OkSubida ? 'success' : ''}>
-                                {ErrSubida && <p className='error1'>{ErrSubida}</p>}
-                                {OkSubida && <p className='success1'>{OkSubida}</p>}
-                            </div>
-
                             {previewImage && rDescripcion.current.value && (
                                 <>
                                     <h2>Previsualización</h2>
-                                    <Card style={{ width: '400px' }}>
+                                    <Card style={{ width: '400px', marginBottom: '20px' }}>
                                         <CardHeader
                                             avatar={
                                                 <Avatar src={logo} />
@@ -222,6 +216,11 @@ const Subir = () => {
                                     </Card>
                                 </>
                             )}
+                            <div className={ErrSubida ? 'error' : OkSubida ? 'success' : ''}>
+                                {ErrSubida && <p className='error1'>{ErrSubida}</p>}
+                                {OkSubida && <p className='success1'>{OkSubida}</p>}
+                            </div>
+                            <button className='btnSubir' type="submit">Subir</button>
                         </form>
                     </div>
                 ) : (
