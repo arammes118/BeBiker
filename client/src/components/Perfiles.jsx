@@ -14,10 +14,9 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import ShareIcon from '@mui/icons-material/Share'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { Box, Menu, MenuItem } from '@mui/material'
-import { Header } from './comun/Header'
+import { Box} from '@mui/material'
+
+// IMGs
 import fer from '../assets/img/fer.jpg'
 import logo from '../assets/img/BeBiker.png'
 
@@ -27,7 +26,7 @@ import ConexContext from '../context/ConexContext'
 export const Perfiles = () => {
     const { peticion } = useContext(ConexContext) // Contexto
     const { userId } = useParams() // Cogemos el perfil del usuario de los parametros
-    const [Usuario, setUsuario] = useState('') // Estado para almacenar el usuario del usuario
+
     const [Id, setId] = useState('') // Estado para almacernar el id del usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
     const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
@@ -40,10 +39,13 @@ export const Perfiles = () => {
 
     //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
+        setNPost('0') // Asignamos el valor predeterminado de posts a 0
+        setNRutas('0') // Asignamos el valor predeterminado de rutas a 0
+        setNSeguidores('0') // Asignamos el valor predeterminado de seguidores a 0
+        setNSeguidos('0') // Asignamos el valor predeterminado de seguidos a 0
         async function ver() {
             const pet = await peticion(`/perfil/${userId}`)
             setId(pet.idUsuario)
-            setUsuario(pet.usuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
             setNombreComp(Nombre + ' ' + Apellido)
@@ -57,11 +59,13 @@ export const Perfiles = () => {
     useEffect(() => {
         async function ver() {
             const pet = await peticion('/publicaciones/ver?id=' + Id)
-            setList(pet)
-            console.log(pet)
+            if (Array.isArray(pet)) {
+                setList(pet)
+              }
         }
         ver()
     }, [Id, peticion])
+
 
     return (
         <>
@@ -100,7 +104,6 @@ export const Perfiles = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                objectFit='contain'
                                 image={logo}
                             />
                             <CardActions disableSpacing>
@@ -108,6 +111,7 @@ export const Perfiles = () => {
                                     aria-label="Me gusta"
                                     className='active'
                                 >
+                                    <FavoriteIcon />
                                 </IconButton>
                                 <IconButton aria-label="share">
                                     <ShareIcon />
@@ -117,7 +121,7 @@ export const Perfiles = () => {
                             <CardContent>
                                 <Box display="flex" alignItems="center">
                                     <Typography variant="subtitle1" component="span" fontWeight="bold" marginRight={1}>
-                                        {Usuario}
+                                        {userId}
                                     </Typography>
                                     <Typography variant="body1">
                                         {elem.descripcion}

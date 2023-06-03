@@ -145,7 +145,6 @@ export const Perfil = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                objectFit='contain'
                                 image={logo}
                             />
                             <CardActions disableSpacing>
