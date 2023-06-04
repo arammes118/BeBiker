@@ -4,6 +4,15 @@ from flask import Flask, request, jsonify
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
 
+from werkzeug.utils import secure_filename
+
+import os
+
+import smtplib
+import random
+import string
+
+
 #Importamos fichero con funciones de ayuda
 from asset.funciones import *
 from asset.json import *
@@ -226,6 +235,85 @@ def repUser():
             'res': False
         })
 
+def generar_contrasena():
+    # Generar una nueva contraseña aleatoria
+    caracteres = string.ascii_letters + string.digits + string.punctuation
+    contrasena = ''.join(random.choice(caracteres) for _ in range(10))
+    return contrasena
+
+def enviar_correo(destinatario, contrasena):
+    # Configurar los detalles del servidor de correo saliente (SMTP)
+    servidor_smtp = 'smtp.gmail.com'  # Ejemplo para Gmail, ajustar según tu proveedor de correo
+    puerto_smtp = 587  # Puerto para TLS
+
+    remitente = 'gtavgtavonline3@gmail.com'  # Tu dirección de correo electrónico
+    contraseña = ''  # Tu contraseña de correo electrónico
+
+    mensaje = f'Su nueva contraseña es: {contrasena}'
+
+    # Crear una conexión segura con el servidor SMTP
+    servidor = smtplib.SMTP(servidor_smtp, puerto_smtp)
+    servidor.starttls()
+    servidor.login(remitente, contraseña)
+
+    # Enviar el correo electrónico
+    servidor.sendmail(remitente, destinatario, mensaje)
+
+    # Cerrar la conexión con el servidor SMTP
+    servidor.quit()
+
+
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA CAMBIAR CONTRASEÑA
+@app.route(f'/{URL}/resetpass')
+def resetpass():
+    mail = request.headers.get('mail')
+
+    # Comporbamos que se pasan estos argumentos para loguear
+    if (mail == None):
+        return respuesta({
+            'estado': ERR_PARAM_NEC,
+            'mensaje': (f'Argumentos requeridos: mail')
+        })
+    
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': (f'Problema al conectar a la BD')
+            
+        })
+    
+    # Consultamos el usuario
+    sql = """SELECT idUsuario
+             FROM usuarios
+             WHERE mail = %s ;"""
+    values = (mail,)
+    cursor.execute(sql, values) # Ejecutamos la consulta
+
+    res = cursor.fetchone()
+    idUsuario = res[0]
+    cursor.close()
+
+        # Ejemplo de uso
+    correo_destinatario = idUsuario  # Correo del destinatario
+    nueva_contrasena = generar_contrasena()  # Generar una nueva contraseña
+    enviar_correo(correo_destinatario, nueva_contrasena)  # Enviar el correo con la nueva contraseña
+
+    if len(res) == 0:
+        return (respuesta({
+            'estado': EST_OK,
+            'mensaje': 'NO OK',
+        }))
+    else:
+        return (respuesta({
+            'estado': EST_OK,
+            'mensaje': 'OK',
+        }))
+    
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PERFIL POR ID
 @app.route(f"{URL}/perfil/ver", methods=["GET"])
@@ -337,6 +425,17 @@ def list():
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA INSERTAR PUBLICACION
+
+app.config["UPLOAD_FOLDER"] = "/client/src/assets/publicaciones"
+ALLOWER_EXTENSIONS = set(['png', "jpg", "jpeg"])
+
+def ficheroPermitido(file):
+    file = file.split('.')
+    print(file)
+    if file[1] in ALLOWER_EXTENSIONS:
+        return True
+    return False
+
 @app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
 def ins():
     # JSON con los datos
@@ -356,9 +455,15 @@ def ins():
 
     idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
 
-    # foto_data = request.data  # Accede a los datos binarios de la imagen
-    # foto = BytesIO(foto_data)
-    # print(foto)
+    foto = request.files["foto"]
+    print(foto)
+    print(foto, foto.filename)
+    filename = secure_filename(foto.filename)
+    print(filename)
+
+    if ficheroPermitido(filename):
+        print("Permitido")
+        foto.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
     # Creamos un cursor para la consulta
     try:
@@ -375,7 +480,6 @@ def ins():
     nPost = res1[0]
     
     try:
-
         # Consulta SQL
         cursor.execute("""INSERT INTO publicaciones (descripcion, cfUsuario) 
                 VALUES ('{0}', '{1}')"""
@@ -645,10 +749,11 @@ def paginaNoEncontrada(error):
 # # # # # # # # CONTROL DE CORS # # # # # # # 
 @app.after_request
 def after_request(response): 
-    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+    response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
     response.headers["Access-Control-Allow-Headers"] = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, authorization, mail, psw"
+    response.headers["Access-Control-Expose-Headers"] = "Content-Type"
     return response
 
 if __name__ == '__main__':

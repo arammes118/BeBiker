@@ -25,7 +25,7 @@ import '../assets/css/perfil.css'
 import chema from '../assets/img/chema.jpg'
 
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, LatLngBounds } from 'react-leaflet'
 
 
 // CSS
@@ -82,18 +82,20 @@ const Subir = () => {
     async function guardarPost(event) {
         event.preventDefault()
 
-        //const imgBlob = await convertImgToBlob(image);
+        const formData = new FormData();
+        formData.append("descripcion", rDescripcion.current.value);
+        formData.append("foto", rFoto.current.files[0]);
+        formData.append("idUsuario", perfil_id);
 
-        const pet = await peticion('/publicaciones/ins', {
-            method: 'POST',
-            json: {
-                descripcion: rDescripcion.current.value,
-                //foto: imgBlob,
-                idUsuario: perfil_id
-            }
-
+        const pet = await peticion("/publicaciones/ins", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
         })
-        if (pet.res) {
+
+        if (pet) {
             setErrorSubida("ERROR al subir la publicación")
         } else {
             setOkSubida("Publicación añadida con éxito")
@@ -127,29 +129,43 @@ const Subir = () => {
         console.log(pet)
     }
 
-    const [location, setLocation] = useState('');
-    const [latitude, setLatitude] = useState('');
-    const [longitude, setLongitude] = useState('');
+    const [startLocation, setStartLocation] = useState('');
+    const [endLocation, setEndLocation] = useState('');
+    const [startLatitude, setStartLatitude] = useState('');
+    const [startLongitude, setStartLongitude] = useState('');
+    const [endLatitude, setEndLatitude] = useState('');
+    const [endLongitude, setEndLongitude] = useState('');
 
     // Manejar el evento de obtener coordenadas
     async function handleGetCoordinates() {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`);
-            const data = await response.json();
+            const responseStart = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${startLocation}&format=json&limit=1`
+            );
+            const responseEnd = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${endLocation}&format=json&limit=1`
+            );
+            const dataStart = await responseStart.json();
+            const dataEnd = await responseEnd.json();
 
-            if (data.length > 0) {
-                const { lat, lon } = data[0];
-                setLatitude(lat);
-                setLongitude(lon);
+            if (dataStart.length > 0 && dataEnd.length > 0) {
+                const startLat = dataStart[0].lat;
+                const startLon = dataStart[0].lon;
+                const endLat = dataEnd[0].lat;
+                const endLon = dataEnd[0].lon;
+
+                setStartLatitude(startLat);
+                setStartLongitude(startLon);
+                setEndLatitude(endLat);
+                setEndLongitude(endLon);
             } else {
-                // No se encontraron resultados para el lugar ingresado
-                console.log('No se encontraron coordenadas para el lugar ingresado.');
+                // No se encontraron resultados para uno o ambos lugares ingresados
+                console.log('No se encontraron coordenadas para uno o ambos lugares ingresados.');
             }
         } catch (error) {
             console.error('Error al obtener coordenadas:', error);
         }
     }
-
 
     return (
         <div className='principal'>
@@ -242,27 +258,23 @@ const Subir = () => {
                             <h2>Geocodificación Inversa</h2>
 
                             <div className='map-container'>
-                                <input
-                                    type="text"
-                                    placeholder="Lugar"
-                                    value={location}
-                                    onChange={e => setLocation(e.target.value)}
-                                />
+                                <input type="text" value={startLocation} onChange={event => setStartLocation(event.target.value)} />
+                                <input type="text" value={endLocation} onChange={event => setEndLocation(event.target.value)} />
                                 <button onClick={handleGetCoordinates}>Obtener Coordenadas</button>
                             </div>
 
-                            {latitude && longitude && (
-                                <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: '400px' }}>
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    <Marker position={[latitude, longitude]}>
-                                        <Popup>{location}</Popup>
-                                    </Marker>
-                                </MapContainer>
-                            )}
+                      
+                                {startLatitude && startLongitude && endLatitude && endLongitude && (
+                                    <MapContainer>
+                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                        <Polyline positions={[[startLatitude, startLongitude], [endLatitude, endLongitude]]} />
+                                    </MapContainer>
+                                )}
+                           
                         </div>
                     </form>
                 )}
-            </div>
+            </div> 
         </div >
 
     )

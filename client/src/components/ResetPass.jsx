@@ -6,13 +6,34 @@ import '../assets/css/styles.css'
 
 //IMG
 import logo from '../assets/img/BeBiker.png'
+import ConexContext from '../context/ConexContext'
 
 export const ResetPass = () => {
+    //Contexto que manejara las peticiones a la BD
+    const { peticion } = useContext(ConexContext)
+
     const [Mail, setMail] = useState("")
     const [Error, setError] = useState("")
 
     //REFs
     const rMail = useRef()
+
+    //Función que maneja el login del usuario
+    async function resetPass(event) {
+        event.preventDefault()
+        //Expresion que comprueba que sea un mail válido
+        const regMail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+        if (Mail === '' || !regMail.test(Mail)) {
+            setError("Introduce un correo electrónico válido")
+        } else {
+            let res = await peticion('/resetpass', {
+                headers: {
+                    mail: Mail,
+                }
+            })
+            console.log(res); // Verifica la estructura de la respuesta en la consola
+        }
+    }
 
     //UseEffect 
     useEffect(() => {
@@ -26,7 +47,7 @@ export const ResetPass = () => {
                 <div className="logo">
                     <img src={logo} alt="BeBiker" />
                 </div>
-                <form>
+                <form onSubmit={resetPass}>
                     <div className="input-group">
                         <input type='email'
                             placeholder='Correo electrónico'
