@@ -77,8 +77,11 @@ export const Perfil = () => {
             setNombre(pet.nombre)
             setApellido(pet.apellido)
             setNombreComp(Nombre + ' ' + Apellido)
-            if ((pet.nPost) > 0)
-                setNPost(pet.nPost)
+            setNPost(pet.nPost)
+            setNRutas(pet.nRutas)
+            setNSeguidos(pet.nSeguidos)
+            setNSeguidores(pet.nSeguidores)
+            console.log(pet)
         }
         ver()
     }, [Apellido, Nombre, perfil_id, peticion])
@@ -88,7 +91,6 @@ export const Perfil = () => {
         async function ver() {
             const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
             setList(pet)
-            console.log(pet)
         }
         ver()
     }, [perfil_id, peticion])
@@ -103,9 +105,6 @@ export const Perfil = () => {
                 <div className='content'>
                     <div className='details'>
                         <h2>{Usuario}<br /><span>{NombreComp}</span></h2>
-                        <div className='actionBtn'>
-                            <button className='btn'>Seguir</button>
-                        </div>
                         <div className='data'>
                             <h3>{NPost}<br /><span>Publicaciones</span></h3>
                             <h3>{NSeguidores}<br /><span>Seguidores</span></h3>
