@@ -42,16 +42,19 @@ const Subir = () => {
     const [previewImage, setPreviewImage] = useState('')
     const [mostrarFormPost, setMostrarFormPost] = useState(true);
 
+    // Handlers para mostrar distintos formularios
     const handleBoton1Click = () => {
-        setMostrarFormPost(true);
-    };
+        setMostrarFormPost(true)
+    }
 
     const handleBoton2Click = () => {
-        setMostrarFormPost(false);
-    };
+        setMostrarFormPost(false)
+    }
 
+    // Handle para seleccionar la foto que inserta el usuario
     const handleImageChange = (e) => {
         const selectedImage = e.target.files[0]
+        console.log(selectedImage)
         setImage(selectedImage)
 
         if (selectedImage) {
@@ -70,7 +73,11 @@ const Subir = () => {
     const rDescripcion = useRef()
     const rFoto = useRef()
 
+    // REFs Rutas
     const rTitulo = useRef()
+    const rDescripcionR = useRef()
+    const rPuntoInicio = useRef()
+    const rPuntoFin = useRef()
 
     async function convertImgToBlob(img) {
         const response = await fetch(img.src);
@@ -82,27 +89,56 @@ const Subir = () => {
     async function guardarPost(event) {
         event.preventDefault()
 
-        const formData = new FormData();
-        formData.append("descripcion", rDescripcion.current.value);
-        formData.append("foto", rFoto.current.files[0]);
-        formData.append("idUsuario", perfil_id);
-
         const pet = await peticion("/publicaciones/ins", {
             method: "POST",
-            body: formData,
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
+            json: {
+                descripcion: rDescripcion.current.value,
+                foto: image,
+                idUsuario: perfil_id
+            }
         })
+        console.log(image)
 
         if (pet) {
             setErrorSubida("ERROR al subir la publicación")
         } else {
             setOkSubida("Publicación añadida con éxito")
         }
-        //console.log(image)
-        //console.log(imgBlob)
         console.log(pet)
+    }
+
+    // Función guardar ruta
+    async function guardarRuta(event) {
+        event.preventDefault()
+
+        if (rTitulo.current.value === '')
+            setErrorSubida('Introduce un título para la ruta')
+        else if (rDescripcionR.current.value === '')
+            setErrorSubida('Introduce una descripción de la ruta')
+        else if (rPuntoInicio.current.value === '')
+            setErrorSubida('Introduce el punto de inicio de la ruta')
+        else if (rPuntoFin.current.value === '')
+            setErrorSubida('Introduce el punto final de la ruta')
+        else {
+            let pet
+            pet = await peticion('/rutas/ins', {
+                method: 'POST',
+                json: {
+                    titulo: rTitulo.current.value.charAt(0).toUpperCase() + rTitulo.current.value.slice(1),
+                    descripcion: rDescripcionR.current.value.charAt(0).toUpperCase() + rDescripcionR.current.value.slice(1),
+                    puntoInicio: rPuntoInicio.current.value,
+                    puntoFin: rPuntoFin.current.value,
+                    idUsuario: perfil_id
+                }
+
+            })
+            if (!pet) {
+                setErrorSubida("ERROR al subir la publicación")
+            } else {
+                setOkSubida("Publicación añadida con éxito")
+            }
+            console.log(pet)
+        }
     }
 
     useEffect(() => {
@@ -112,60 +148,6 @@ const Subir = () => {
         }
         ver()
     })
-
-
-    // Funcion Guardar Ruta
-    async function guardarRuta(event) {
-        event.preventDefault()
-
-        const pet = await peticion('/rutas/ins', {
-            method: 'POST',
-            json: {
-                titulo: rTitulo.current.value,
-                descripcion: rDescripcion.current.value,
-                idUsuario: perfil_id
-            }
-        })
-        console.log(pet)
-    }
-
-    const [startLocation, setStartLocation] = useState('');
-    const [endLocation, setEndLocation] = useState('');
-    const [startLatitude, setStartLatitude] = useState('');
-    const [startLongitude, setStartLongitude] = useState('');
-    const [endLatitude, setEndLatitude] = useState('');
-    const [endLongitude, setEndLongitude] = useState('');
-
-    // Manejar el evento de obtener coordenadas
-    async function handleGetCoordinates() {
-        try {
-            const responseStart = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${startLocation}&format=json&limit=1`
-            );
-            const responseEnd = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${endLocation}&format=json&limit=1`
-            );
-            const dataStart = await responseStart.json();
-            const dataEnd = await responseEnd.json();
-
-            if (dataStart.length > 0 && dataEnd.length > 0) {
-                const startLat = dataStart[0].lat;
-                const startLon = dataStart[0].lon;
-                const endLat = dataEnd[0].lat;
-                const endLon = dataEnd[0].lon;
-
-                setStartLatitude(startLat);
-                setStartLongitude(startLon);
-                setEndLatitude(endLat);
-                setEndLongitude(endLon);
-            } else {
-                // No se encontraron resultados para uno o ambos lugares ingresados
-                console.log('No se encontraron coordenadas para uno o ambos lugares ingresados.');
-            }
-        } catch (error) {
-            console.error('Error al obtener coordenadas:', error);
-        }
-    }
 
     return (
         <div className='principal'>
@@ -241,40 +223,39 @@ const Subir = () => {
                     </div>
                 ) : (
                     <form onSubmit={guardarRuta}>
-                        <div>
+                        <div className="form-group">
+                            <label htmlFor="caption">Título de la ruta:</label>
                             <input
                                 type='text'
-                                placeholder='Titulo'
                                 ref={rTitulo}
                             />
+                            <label htmlFor="caption">Descripción de la ruta:</label>
+                            <textarea
+                                id="caption"
+                                name="caption"
+                                rows="3"
+                                required
+                                ref={rDescripcionR}
+                            />
+                            <label htmlFor="caption">Punto de Inicio de la ruta:</label>
                             <input
                                 type='text'
-                                placeholder='Descripcion'
-                                ref={rDescripcion}
+                                ref={rPuntoInicio}
+                            />
+                            <label htmlFor="caption">Destino de la ruta:</label>
+                            <input
+                                type='text'
+                                ref={rPuntoFin}
                             />
                         </div>
-
-                        <div>
-                            <h2>Geocodificación Inversa</h2>
-
-                            <div className='map-container'>
-                                <input type="text" value={startLocation} onChange={event => setStartLocation(event.target.value)} />
-                                <input type="text" value={endLocation} onChange={event => setEndLocation(event.target.value)} />
-                                <button onClick={handleGetCoordinates}>Obtener Coordenadas</button>
-                            </div>
-
-                      
-                                {startLatitude && startLongitude && endLatitude && endLongitude && (
-                                    <MapContainer>
-                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                        <Polyline positions={[[startLatitude, startLongitude], [endLatitude, endLongitude]]} />
-                                    </MapContainer>
-                                )}
-                           
+                        <div className={ErrSubida ? 'error' : OkSubida ? 'success' : ''}>
+                            {ErrSubida && <p className='error1'>{ErrSubida}</p>}
+                            {OkSubida && <p className='success1'>{OkSubida}</p>}
                         </div>
+                        <button className='btnSubir' type="submit">Subir</button>
                     </form>
                 )}
-            </div> 
+            </div>
         </div >
 
     )
