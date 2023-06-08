@@ -14,7 +14,7 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import ShareIcon from '@mui/icons-material/Share'
-import { Box} from '@mui/material'
+import { Box } from '@mui/material'
 
 // IMGs
 import fer from '../assets/img/fer.jpg'
@@ -24,7 +24,7 @@ import logo from '../assets/img/BeBiker.png'
 import ConexContext from '../context/ConexContext'
 
 export const Perfiles = () => {
-    const { peticion } = useContext(ConexContext) // Contexto
+    const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const { userId } = useParams() // Cogemos el perfil del usuario de los parametros
 
     const [Id, setId] = useState('') // Estado para almacernar el id del usuario
@@ -33,24 +33,22 @@ export const Perfiles = () => {
     const [NombreComp, setNombreComp] = useState('') // Estado para almacenar el nombre completo del usuario
     const [NPost, setNPost] = useState('') // Estado para almacenar la cantidad de post del usuario
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
-    const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
-    const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
+    const [siguiendo, setSiguiendo] = useState(false)
 
     //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
         setNPost('0') // Asignamos el valor predeterminado de posts a 0
         setNRutas('0') // Asignamos el valor predeterminado de rutas a 0
-        setNSeguidores('0') // Asignamos el valor predeterminado de seguidores a 0
-        setNSeguidos('0') // Asignamos el valor predeterminado de seguidos a 0
         async function ver() {
             const pet = await peticion(`/perfil/${userId}`)
+            console.log(pet)
             setId(pet.idUsuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
             setNombreComp(Nombre + ' ' + Apellido)
-            if ((pet.nPost) > 0)
-                setNPost(pet.nPost)
+            setNPost(pet.nPost)
+            setNRutas(pet.nRutas)
         }
         ver()
     }, [Apellido, Nombre, userId, peticion])
@@ -61,11 +59,38 @@ export const Perfiles = () => {
             const pet = await peticion('/publicaciones/ver?id=' + Id)
             if (Array.isArray(pet)) {
                 setList(pet)
-              }
+            }
+            console.log(pet)
         }
         ver()
     }, [Id, peticion])
 
+    // Función que nos permite seguir cuentas
+    async function seguir(event) {
+        event.preventDefault()
+
+        const pet = await peticion(`/seguir`, {
+            method: "POST",
+            json: {
+                cfCuenta1: perfil_id,
+                cfCuenta2: userId
+            }
+        })
+        setSiguiendo(!siguiendo); // Invertir el valor actual de siguiendo
+
+        console.log(pet)
+    }
+
+    // En el useEffect, consultar el estado siguiendo del usuario cuando se inicie la sesión
+    useEffect(() => {
+        async function obtenerSeguidos() {
+            const pet = await peticion(`/seguido?cfCuenta1=${perfil_id}&cfCuenta2=${userId}`)
+            setSiguiendo(pet.siguiendo)
+            console.log(pet.siguiendo)
+        }
+        
+        obtenerSeguidos()
+    }, [perfil_id, peticion, userId])
 
     return (
         <>
@@ -78,12 +103,12 @@ export const Perfiles = () => {
                     <div className='details'>
                         <h2>{userId}<br /><span>{NombreComp}</span></h2>
                         <div className='actionBtn'>
-                            <button className='btn'>Seguir</button>
+                            <button className="btn" onClick={seguir}>
+                                {siguiendo ? 'Dejar de seguir' : 'Seguir'}
+                            </button>
                         </div>
                         <div className='data'>
                             <h3>{NPost}<br /><span>Publicaciones</span></h3>
-                            <h3>{NSeguidores}<br /><span>Seguidores</span></h3>
-                            <h3>{NSeguidos}<br /><span>Siguiendo</span></h3>
                             <h3>{NRutas}<br /><span>Rutas</span></h3>
                         </div>
                     </div>
