@@ -42,7 +42,6 @@ export const MenuLateral = () => {
     useEffect(() => {
         async function ver() {
             const pet = await peticion('/perfil/ver?id=' + perfil_id)
-            console.log(pet)
             setUsuario(pet.usuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
