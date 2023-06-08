@@ -148,8 +148,10 @@ textarea {
 }
 
 .map-container {
-  width: 400px; /* Ancho deseado */
-  height: 300px; /* Altura deseada */
+  width: 400px;
+  /* Ancho deseado */
+  height: 300px;
+  /* Altura deseada */
   position: relative;
   border-radius: 8px;
   overflow: hidden;
@@ -195,4 +197,54 @@ textarea {
 
 .map-container .map-overlay .button:hover {
   background-color: #3367D6;
+}
+
+/* - - - - - - - - RUTAS - - - - - - -*/
+.contentRuta {
+  width: 100%;
+  margin-top: 100px;
+}
+
+.tarjetaRuta {
+  background-color: #292929 !important;
+  width: '100%' !important;
+  margin-bottom: '20px' !important;
+
+}
+
+.titulo{
+  color: #fff;
+}
+
+.descripcion{
+  color: #fff;
+}
+
+.btnRutas {
+  width: 100%;
+  padding: 10px 50px;
+  border: 2 px solid #000;
+  outline: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 500;
+  background: #F20505;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+}
+
+.btnRutas:hover {
+  background: #FF4040;
+}
+
+/* - - - - VALORACION - - - - - - */
+.star {
+  cursor: pointer;
+  font-size: 2rem;
+  color: #ccc;
+}
+
+.star.selected {
+  color: gold;
 }

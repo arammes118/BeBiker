@@ -45,26 +45,3 @@ h2 {
     color: white;
     padding: 48px
 }
-/*
-.btn {
-    display: inline-block;
-    background: red;
-    margin-right: 4px;
-    padding: 14px;
-    border-radius: 5px;
-    margin-top: 18px;
-}
-*/
-
-a.btn {
-    text-decoration: none;
-}
-
-a.btn:first-of-type {
-    background: red;
-    color: white;
-}
-
-a.btn:hover {
-    opacity: 0.8;
-}
