@@ -27,7 +27,6 @@ export const Perfiles = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const { userId } = useParams() // Cogemos el perfil del usuario de los parametros
 
-    const [Id, setId] = useState('') // Estado para almacernar el id del usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
     const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
     const [NombreComp, setNombreComp] = useState('') // Estado para almacenar el nombre completo del usuario
@@ -43,7 +42,6 @@ export const Perfiles = () => {
         async function ver() {
             const pet = await peticion(`/perfil/${userId}`)
             console.log(pet)
-            setId(pet.idUsuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
             setNombreComp(Nombre + ' ' + Apellido)
@@ -55,15 +53,14 @@ export const Perfiles = () => {
 
     //UseEffect que muestra las publicaciones de ese usuario
     useEffect(() => {
-        async function ver() {
-            const pet = await peticion('/publicaciones/ver?id=' + Id)
-            if (Array.isArray(pet)) {
-                setList(pet)
-            }
+        async function verPosts() {
+            const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
+            setList(pet)
+
             console.log(pet)
         }
-        ver()
-    }, [Id, peticion])
+        verPosts()
+    }, [perfil_id, peticion])
 
     // Función que nos permite seguir cuentas
     async function seguir(event) {
@@ -88,7 +85,7 @@ export const Perfiles = () => {
             setSiguiendo(pet.siguiendo)
             console.log(pet.siguiendo)
         }
-        
+
         obtenerSeguidos()
     }, [perfil_id, peticion, userId])
 
