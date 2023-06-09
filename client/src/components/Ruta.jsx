@@ -11,10 +11,16 @@ export const Ruta = () => {
     const [PuntoInicio, setPuntoInicio] = useState('') // Estado para almacenar el punto de inicio de la ruta
     const [PuntoFin, setPuntoFin] = useState('') // Estado para almacenar el punto de destino de la ruta
     const [Error, setError] = useState('') //Cualquier error en la subida del post
+    const [Puntuacion, setPuntuacion] = useState(0) // Estado que almacena la puntuación de tu valoración
+    const [List, setList] = useState([])
 
     //REFs
     const rComentario = useRef()
     const rPuntuacion = useRef()
+
+    const handleStarClick = (selectedRating) => {
+        setPuntuacion(selectedRating)
+    }
 
     //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
@@ -34,22 +40,33 @@ export const Ruta = () => {
     async function guardarValoracion(event) {
         event.preventDefault()
 
-        const pet = await peticion(`/ruta/insval`, {
-            method: "POST",
-            json: {
-                comentario: rComentario.current.value,
-                userId: userId,
-                idUsuario: perfil_id,
-                ruta: Titulo
-            }
-        })
-        console.log(pet)
-
-        if (pet) {
-            setError("ERROR al publicar el comentario")
+        if (rComentario.current.value === '') {
+            setError('Debes añadir un comentario')
         } else {
-            setError("Comentario añadido con éxito")
+            const pet = await peticion(`/ruta/insval`, {
+                method: "POST",
+                json: {
+                    comentario: rComentario.current.value,
+                    puntuacion: Puntuacion,
+                    idUsuario: perfil_id,
+                    userId: userId,
+                    ruta: Titulo
+                }
+            })
+
+            console.log(pet)
+
+            if (!pet) {
+                setError("ERROR al publicar el comentario")
+            } else {
+                setError("Comentario añadido con éxito")
+            }
         }
+    }
+
+    async function verComments() {
+        const pet = await peticion("/ruta/comments?ruta=" + Titulo)
+        setList(pet)
     }
 
 
@@ -94,48 +111,59 @@ export const Ruta = () => {
                     onChange={(e) => setPuntoFin(e.target.value)}
                     readOnly
                 />
-                <form onSubmit={guardarValoracion}>
-                    <textarea
-                        id="comentario"
-                        name="comentario"
-                        placeholder='Añadir comentario...'
-                        rows="3"
-                        ref={rComentario}
-                    />
+                <div className='addComment'>
+                    <form onSubmit={guardarValoracion}>
+                        <textarea
+                            id="comentario"
+                            name="comentario"
+                            placeholder='Añadir comentario...'
+                            rows="3"
+                            ref={rComentario}
+                        />
 
-                    <Valoracion ref={rPuntuacion} />
-                    <button className='btnSubir' type="submit">Añadir valoración</button>
-                    <div className='error'>
-                        <p className='error1'>{Error}</p>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <span
+                                ref={rPuntuacion}
+                                key={star}
+                                className={star <= Puntuacion ? 'star selected' : 'star'}
+                                onClick={() => handleStarClick(star)}
+                            >
+                                &#9733;
+                            </span>
+                        ))}
+                        <button className='btnSubir' type="submit">Añadir valoración</button>
+                        <div className='error'>
+                            <p className='error1'>{Error}</p>
+                        </div>
+                    </form>
+
+                    <button onClick={verComments} className='btnVerVal'>Ver valoraciones</button>
+                    <div>
+                        {List.map((elem) => (
+                            <div key={elem.idValoracion}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        className={star <= elem.valoracion ? 'star selected' : 'star'}
+                                    >
+                                        &#9733;
+                                    </span>
+                                ))}
+                                {elem.usuario}
+                                <textarea
+                                    id="comentario"
+                                    name="comentario"
+                                    rows="3"
+                                    defaultValue={elem.comentario}
+                                    ref={rComentario}
+                                    readOnly
+                                />
+                            </div>
+                        ))}
+
                     </div>
-                </form>
+                </div>
             </div>
         </>
     )
 }
-
-const Valoracion = () => {
-    const [rating, setRating] = useState(0);
-
-    useEffect(() => {
-        console.log(rating)
-    }, [rating])
-
-    const handleStarClick = (selectedRating) => {
-        setRating(selectedRating)
-    }
-
-    return (
-        <div>
-            {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                    key={star}
-                    className={star <= rating ? "star selected" : "star"}
-                    onClick={() => handleStarClick(star)}
-                >
-                    &#9733;
-                </span>
-            ))}
-        </div>
-    );
-};
