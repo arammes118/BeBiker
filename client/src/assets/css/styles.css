@@ -239,6 +239,10 @@ textarea {
 }
 
 /* - - - - VALORACION - - - - - - */
+.addComment {
+  margin-top: 100px;
+}
+
 .star {
   cursor: pointer;
   font-size: 2rem;
@@ -247,4 +251,21 @@ textarea {
 
 .star.selected {
   color: gold;
+}
+
+.btnVerVal {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #eaeaea;
+  color: #333333;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btnVerVal:hover {
+  background-color: #cccccc;
 }
