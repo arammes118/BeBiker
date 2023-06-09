@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import ConexContext from '../context/ConexContext'
 import { Link, useParams } from 'react-router-dom'
 
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 export const Ruta = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const { tituloRuta, userId } = useParams() // Cogemos el titulo y el perfil del usuario de los parametros
@@ -69,6 +70,8 @@ export const Ruta = () => {
         setList(pet)
     }
 
+    const position = [51.505, -0.09]
+
 
     return (
         <>
@@ -111,6 +114,20 @@ export const Ruta = () => {
                     onChange={(e) => setPuntoFin(e.target.value)}
                     readOnly
                 />
+                <div id="map" style={{ height: '180px' }}>
+                    <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={position}>
+                            <Popup>
+                                A pretty CSS3 popup. <br /> Easily customizable.
+                            </Popup>
+                        </Marker>
+                    </MapContainer>
+                </div>
+
                 <div className='addComment'>
                     <form onSubmit={guardarValoracion}>
                         <textarea

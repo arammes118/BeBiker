@@ -37,13 +37,19 @@ import { Header } from './comun/Header'
 export const Publicaciones = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const [active, setActive] = useState(false)
+    const [activePostId, setActivePostId] = useState(null);
+
 
     // Estados
     const [List, setList] = useState([]) //listado de publicaciones
 
 
     const handleClick = () => {
-        setActive(!active);
+        setActive(!active)
+    }
+
+    const handleClickMG = (postId) => {
+        setActivePostId(postId);
     };
 
     // UseEffects
@@ -53,9 +59,13 @@ export const Publicaciones = () => {
             /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
             que inicia sesión */
             const filtroPosts = pet.filter(publicacion => {
-                return publicacion.cfUsuario !== perfil_id
-            })
-            setList(filtroPosts)
+                return publicacion.cfUsuario !== perfil_id;
+            });
+            const updatedList = filtroPosts.map(publicacion => ({
+                ...publicacion,
+                active: false
+            }));
+            setList(updatedList);
         }
 
         listar()
@@ -89,14 +99,20 @@ export const Publicaciones = () => {
                         />
                         <CardActions disableSpacing>
                             <IconButton
+                                key={elem.idPublicacion}
                                 aria-label="Me gusta"
-                                onClick={handleClick}
-                                className={active ? 'active' : ''}
+                                onClick={() => {
+                                    setList(prevList =>
+                                        prevList.map(item =>
+                                            item.idPublicacion === elem.idPublicacion
+                                                ? { ...item, active: !item.active }
+                                                : item
+                                        )
+                                    );
+                                }}
+                                className={elem.active ? 'active' : ''}
                             >
-                                <FavoriteIcon className={active ? 'activeIcon' : ''} />
-                            </IconButton>
-                            <IconButton aria-label="fav">
-                                <BookmarkIcon />
+                                <FavoriteIcon />
                             </IconButton>
                         </CardActions>
 
