@@ -81,11 +81,6 @@ const Login = () => {
                         </div>
                     </div>
                 </form>
-                <div className="forgot-password">
-                    <Link to={{ pathname: '/resetpass' }} className='link'>
-                        ¿Has olvidado la contraseña?
-                    </Link>
-                </div>
                 <div className="registro">
                     ¿No tienes una cuenta?
                     <Link to={{ pathname: '/registro' }} className='link'>

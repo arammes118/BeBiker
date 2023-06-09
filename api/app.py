@@ -21,9 +21,9 @@ from asset.json import *
 from config import config
 
 # Importamos los módulos de las diferentes rutas (Blueprint)
-from routes.publicaciones import publicaciones
-from routes.rutas import rutas
-from routes.usuario import perfil
+# from routes.publicaciones import publicaciones
+# from routes.rutas import rutas
+# from routes.usuario import perfil
 
 from io import BytesIO
 
@@ -42,9 +42,9 @@ conex = MySQL(app)
 #####################################################################
 #### DIFERENTES ENDPOINT SEPARADOS POR RUTAS
 #####################################################################
-app.register_blueprint(publicaciones, url_prefix=f"/{URL}/publicaciones") # Ruta publicaciones
-app.register_blueprint(rutas, url_prefix=f"/{URL}/rutas") # Ruta rutas
-app.register_blueprint(perfil, url_prefix=f"/{URL}/perfil") # Ruta perfil
+# app.register_blueprint(publicaciones, url_prefix=f"/{URL}/publicaciones") # Ruta publicaciones
+# app.register_blueprint(rutas, url_prefix=f"/{URL}/rutas") # Ruta rutas
+# app.register_blueprint(perfil, url_prefix=f"/{URL}/perfil") # Ruta perfil
 
 # # # # # # # # END-POINT # # # # # # # #
 # LOGIN USUARIOS
@@ -235,112 +235,28 @@ def repUser():
             'res': False
         })
 
-def generar_contrasena():
-    # Generar una nueva contraseña aleatoria
-    caracteres = string.ascii_letters + string.digits + string.punctuation
-    contrasena = ''.join(random.choice(caracteres) for _ in range(10))
-    return contrasena
-
-def enviar_correo(destinatario, contrasena):
-    # Configurar los detalles del servidor de correo saliente (SMTP)
-    servidor_smtp = 'smtp.gmail.com'  # Ejemplo para Gmail, ajustar según tu proveedor de correo
-    puerto_smtp = 587  # Puerto para TLS
-
-    remitente = 'gtavgtavonline3@gmail.com'  # Tu dirección de correo electrónico
-    contraseña = ''  # Tu contraseña de correo electrónico
-
-    mensaje = f'Su nueva contraseña es: {contrasena}'
-
-    # Crear una conexión segura con el servidor SMTP
-    servidor = smtplib.SMTP(servidor_smtp, puerto_smtp)
-    servidor.starttls()
-    servidor.login(remitente, contraseña)
-
-    # Enviar el correo electrónico
-    servidor.sendmail(remitente, destinatario, mensaje)
-
-    # Cerrar la conexión con el servidor SMTP
-    servidor.quit()
-
-
-
-# # # # # # # # END-POINT # # # # # # # #
-# RUTA CAMBIAR CONTRASEÑA
-@app.route(f'/{URL}/resetpass')
-def resetpass():
-    mail = request.headers.get('mail')
-
-    # Comporbamos que se pasan estos argumentos para loguear
-    if (mail == None):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f'Argumentos requeridos: mail')
-        })
-    
-    try:
-        cursor = conex.connection.cursor()
-    except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f'Problema al conectar a la BD')
-            
-        })
-    
-    # Consultamos el usuario
-    sql = """SELECT idUsuario
-             FROM usuarios
-             WHERE mail = %s ;"""
-    values = (mail,)
-    cursor.execute(sql, values) # Ejecutamos la consulta
-
-    res = cursor.fetchone()
-    idUsuario = res[0]
-    cursor.close()
-
-        # Ejemplo de uso
-    correo_destinatario = idUsuario  # Correo del destinatario
-    nueva_contrasena = generar_contrasena()  # Generar una nueva contraseña
-    enviar_correo(correo_destinatario, nueva_contrasena)  # Enviar el correo con la nueva contraseña
-
-    if len(res) == 0:
-        return (respuesta({
-            'estado': EST_OK,
-            'mensaje': 'NO OK',
-        }))
-    else:
-        return (respuesta({
-            'estado': EST_OK,
-            'mensaje': 'OK',
-        }))
-    
-
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PERFIL POR ID
 @app.route(f"{URL}/perfil/ver", methods=["GET"])
 def list2():
+    result=autentificacion()
+    if result["estado"] > 0:
+        return (result)
+    
     if (request.args.get("id")==None): # se necesita este argumento para la consulta
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"Argumentos requeridos: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
     
     try:
         id = int(request.args.get("id"))
     except:
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Argumentos con formato erróneo: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Argumentos con formato erróneo: id") })
     
     try:
         cur = conex.connection.cursor()
     except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, apellido, nPost
+    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas, nSeguidos, nSeguidores
                 FROM usuarios
                 WHERE idUsuario = {id};
                 """)
@@ -353,7 +269,10 @@ def list2():
             'usuario': res[0][2],
             'nombre': res[0][3],
             'apellido': res[0][4],
-            'nPost': res[0][5]
+            'nPost': res[0][5],
+            'nRutas': res[0][6],
+            'nSeguidos': res[0][7],
+            'nSeguidores': res[0][8]
         }
     cur.close()
     return jsonify(usuario)
@@ -365,12 +284,9 @@ def list3(usuario):
     try:
         cur = conex.connection.cursor()
     except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
+        return respuesta({'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute("""SELECT idUsuario, mail, usuario, nombre, apellido, nPost
+    cur.execute("""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas
                 FROM usuarios
                 WHERE usuario = %s;
                 """, (usuario,))
@@ -383,7 +299,8 @@ def list3(usuario):
             'usuario': res[0][2],
             'nombre': res[0][3],
             'apellido': res[0][4],
-            'nPost': res[0][5]
+            'nPost': res[0][5],
+            'nRutas': res[0][6]
         }
     cur.close()
     return jsonify(usuario)
@@ -426,114 +343,79 @@ def list():
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA INSERTAR PUBLICACION
 
-app.config["UPLOAD_FOLDER"] = "/client/src/assets/publicaciones"
-ALLOWER_EXTENSIONS = set(['png', "jpg", "jpeg"])
+app.config["UPLOAD_FOLDER"] = "../client/src/assets/publicaciones"
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-def ficheroPermitido(file):
-    file = file.split('.')
-    print(file)
-    if file[1] in ALLOWER_EXTENSIONS:
-        return True
-    return False
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
 def ins():
-    # JSON con los datos
-    mJson = request.json
-    if (mJson == None):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"JSON requerido")
-        })
+    if 'image' not in request.files:
+        resp = jsonify({
+            'status' : False,
+            'message' : 'Image is not defined'})
+        resp.status_code = 400
+        return resp
+
+    files = request.files.getlist('foto')
+
+    errors = {}
+    success = False
+
+    for photo in files:
+
+        if photo and allowed_file(photo.filename):
+            filename = secure_filename(photo.filename)
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            success = True
+        else:
+            errors[photo.filename] = 'Image type is not allowed'
+
+    if success and errors:
+        errors['message'] = jsonify({
+            'data' : photo.filename,
+            'status' : True,
+            'message' : 'Image(s) successfully uploaded'})
+        resp = jsonify(errors)
+        resp.status_code = 500
+        return resp
+
+    if success:
+        resp = jsonify({
+            'data' : photo.filename,
+            'status' : True,
+            'message' : 'Images successfully uploaded'})
+        resp.status_code = 201
+        return resp
+    else:
+        resp = jsonify(errors)
+        resp.status_code = 500
+        return resp
     
-    # Comprobamos que se le pasan los datos necesarios en el JSON
-    if ('descripcion' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: descripcion")
-        })
-
-    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
-
-    foto = request.files["foto"]
-    print(foto)
-    print(foto, foto.filename)
-    filename = secure_filename(foto.filename)
-    print(filename)
-
-    if ficheroPermitido(filename):
-        print("Permitido")
-        foto.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-    # Creamos un cursor para la consulta
-    try:
-        cursor = conex.connection.cursor()
-    except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
-    
-    # Consulta que nos devuelve el contador de post del usuario
-    cursor.execute("SELECT nPost FROM usuarios WHERE idUsuario = %s", [idUsuario])
-    res1 = cursor.fetchone()
-    nPost = res1[0]
-    
-    try:
-        # Consulta SQL
-        cursor.execute("""INSERT INTO publicaciones (descripcion, cfUsuario) 
-                VALUES ('{0}', '{1}')"""
-                .format(mJson['descripcion'], idUsuario))
-        conex.connection.commit() # Confirma la accion de inserción
-
-        # Incrementar el contador de posts del usuario
-        nPost += 1
-
-        # Actualizar el contador en la base de datos
-        cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
-        conex.connection.commit()
-
-        return respuesta({
-            'estado': EST_OK,
-            'mensaje': ("OK")
-        })
-    except:
-        return respuesta({
-            'estado': ERR_OTHER,
-            'mensaje': ("Error al registrar")
-        })
-
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PUBLICACIONES POR ID
-@app.route(f"/{URL}/publicaciones/ver", methods=["GET"])
+@app.route(f"/{URL}/publicaciones/ver")
 def listP():
     if (request.args.get("id")==None): # se necesita este argumento para la consulta
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"Argumentos requeridos: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
     
     try:
         id = int(request.args.get("id"))
     except:
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Argumentos con formato erróneo: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Argumentos con formato erróneo: id") })
     
     try:
         cur = conex.connection.cursor()
     except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute(f"""SELECT idPublicacion, descripcion, u.usuario
-                FROM publicaciones
-                JOIN usuarios u ON u.idUsuario = cfUsuario
-                WHERE cfUsuario = {id};
-                """)
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, cfUsuario
+               FROM publicaciones
+               JOIN usuarios u ON u.idUsuario = cfUsuario
+               WHERE cfUsuario = %s;""", (id,))
     res = cur.fetchall()
 
     publicaciones = []
@@ -541,7 +423,8 @@ def listP():
         publicacion = {
             'idPublicacion': elem[0],
             'descripcion': elem[1],
-            'usuario': elem[2]
+            'usuario': elem[2],
+            'cfUsuario': elem[3]
         }
 
         publicaciones.append(publicacion)
@@ -603,6 +486,7 @@ def bor2():
 
         # Actualizamos el contador de publicaciones del usuario
         cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
+        conex.connection.commit()
 
         cursor.close()
         return jsonify({'mensaje': 'OK'})
@@ -614,41 +498,82 @@ def bor2():
 # # # # # # # # # # # # # # RUTAS # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
-
-
 # # # # # # # # END-POINT # # # # # # # #
-# RUTA LISTAR PRODUCTOS
-@app.route(f'/{URL}/productos', methods=['GET'])
-def listarProductos():
+# RUTA LISTAR RUTAS
+@app.route(f"/{URL}/rutas")
+def listRutas():
     try:
-        cursor = conex.connection.cursor()# Creamos un cursor para la consulta
+        cur = conex.connection.cursor()
     except:
         return respuesta({
             'estado': ERR_NO_CONNECT_BD,
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    sql = "SELECT idProducto, nombre, precio, descripcion FROM productos" # Consulta SQL
-    cursor.execute(sql) # Ejecutamos la consulta SQL
-    datos = cursor.fetchall() # Convierte los resultados y los guarda
+    cur.execute("""SELECT idRuta, titulo, descripcion, puntoInicio, puntoFin, u.usuario AS usuario, cfUsuario
+                FROM rutas r
+                JOIN usuarios u ON r.cfUsuario = u.idUsuario
+                """)
+    res = cur.fetchall()
 
-    # Lista que almacena los produsctos
-    productos = []
-    for fila in datos:
-        producto = {
-            'idProducto': fila[0],
-            'nombre': fila[1],
-            'precio': fila[2],
-            'descripcion': fila[3]
+    rutas = []
+    for elem in res:
+        ruta = {
+            'idRuta': elem[0],
+            'titulo': elem[1],
+            'descripcion': elem[2],
+            'puntoInicio': elem[3],
+            'puntoFin': elem[4],
+            'usuario': elem[5],
+            'cfUsuario': elem[6]
         }
-        productos.append(producto)
-    return jsonify(productos)
+
+        rutas.append(ruta)
+    cur.close()
+    return jsonify(rutas)
 
 # # # # # # # # END-POINT # # # # # # # #
-# RUTA CREAR PRODUCTOS
-@app.route('/productos/ins', methods=['POST'])
-def insertarProducto():
+# RUTA MOSTRAR RUTAS
+@app.route(f"/{URL}/ruta/<string:titulo>/<string:usuario>")
+def listRuta(titulo, usuario):
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': "Problema al conectar a la BD"
+        })
+
+    cur.execute("""SELECT idRuta, titulo, descripcion, puntoInicio, puntoFin, u.usuario AS usuario, cfUsuario
+                FROM rutas r
+                JOIN usuarios u ON r.cfUsuario = u.idUsuario
+                WHERE titulo = %s AND usuario = %s;
+                """, (titulo, usuario,))
+    res = cur.fetchone()  # Obtener solo un resultado
+
+    if res:
+        ruta = {
+            'idRuta': res[0],
+            'titulo': res[1],
+            'descripcion': res[2],
+            'puntoInicio': res[3],
+            'puntoFin': res[4],
+            'usuario': res[5],
+            'cfUsuario': res[6]
+        }
+        cur.close()
+        return jsonify(ruta)
+    else:
+        cur.close()
+        return respuesta({
+            'estado': ERR_OTHER,
+            'mensaje': "No se encontró la ruta"
+        })
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA INSERTAR RUTA
+@app.route(f"/{URL}/rutas/ins", methods=['POST'])
+def insRuta():
     # JSON con los datos
     mJson = request.json
     if (mJson == None):
@@ -658,89 +583,249 @@ def insertarProducto():
         })
     
     # Comprobamos que se le pasan los datos necesarios en el JSON
-    if ('nombre' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: nombre")
-        })
-    if ('precio' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: precio")
-        })
+    if ('titulo' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: titulo") })
     if ('descripcion' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: descripcion")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: descripcion") })
+    if ('puntoInicio' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: puntoInicio") })
+    if ('puntoFin' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: puntoFin") })
+    
+    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
 
     # Creamos un cursor para la consulta
     try:
         cursor = conex.connection.cursor()
     except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    # Consulta que nos devuelve el contador de rutas del usuario
+    cursor.execute("SELECT nRutas FROM usuarios WHERE idUsuario = %s", [idUsuario])
+    res1 = cursor.fetchone()
+    if res1 is not None:
+        nRutas = res1[0]
+    else:
+        nRutas = 0  # Asignar 0 como valor predeterminado
     
     try:
         # Consulta SQL
-        cursor.execute("""INSERT INTO productos (nombre, precio, descripcion) 
-                VALUES ('{0}', '{1}', '{2}')"""
-                .format(mJson['nombre'], mJson['precio'], mJson['descripcion']))
+        cursor.execute("""INSERT INTO rutas (titulo, descripcion, puntoInicio, puntoFin, cfUsuario) 
+                VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"""
+                .format(mJson['titulo'], mJson['descripcion'], mJson['puntoInicio'], mJson['puntoFin'], idUsuario))
         conex.connection.commit() # Confirma la accion de inserción
 
-        return respuesta({
-            'estado': EST_OK,
-            'mensaje': ("OK")
-        })
+        # Incrementar el contador de rutas del usuario
+        nRutas += 1
+
+        # Actualizar el contador en la base de datos
+        cursor.execute("UPDATE usuarios SET nRutas = %s WHERE idUsuario = %s", (nRutas, idUsuario))
+        conex.connection.commit()
+
+        return respuesta({ 'estado': EST_OK, 'mensaje': ("OK") })
     except:
-        return respuesta({
-            'estado': ERR_OTHER,
-            'mensaje': ("Error al registrar")
-        })
+        return respuesta({ 'estado': ERR_OTHER, 'mensaje': ("Error al insertar") })
 
 # # # # # # # # END-POINT # # # # # # # #
-# RUTA BORRAR PRODUCTOS
-@app.route('/productos/del', methods=['POST'])
-def bor():
-     # JSON con los datos
+# RUTA INSERTAR VALORACIÓN
+@app.route(f"/{URL}/ruta/insval", methods=["POST"])
+def insVal():
+    # JSON con los datos
     mJson = request.json
     if (mJson == None):
         return respuesta({
             'estado': ERR_PARAM_NEC,
             'mensaje': (f"JSON requerido")
         })
+    
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('comentario' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: comentario") })
+    if ('puntuacion' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: puntuacion") })
+    if ('idUsuario' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: idUsuario") })    
+    if ('userId' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: userId") })
+    if ('ruta' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: ruta") })
+    
+    idUsuario = mJson['idUsuario']
+    userId = mJson['userId']
+    ruta = mJson['ruta']
 
-    if ('id' not in mJson): # se necesita este dato para la consulta
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"Datos requeridos: id")
-        })
-    
+    print(mJson['puntuacion'])
+
     try:
-        id = int(mJson['id'])
-    except:
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"Datos erróneos: id")
-        })
-    
-    # Creamos un cursor para la consulta
-    try:
-        cursor = conex.connection.cursor()
+        cur = conex.connection.cursor()
     except:
         return respuesta({
             'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
+            'mensaje': "Problema al conectar a la BD"
         })
     
-    try:
-        cursor.execute(f"DELETE FROM productos WHERE idProducto = {id}")
-        cursor.close()
-        return jsonify({'mensaje': 'OK'})
+    print(mJson)
+
+    cur.execute("SELECT idUsuario FROM usuarios WHERE usuario = %s", (userId, ))
+    usuario = cur.fetchone()[0]
+    
+    # Obtener el id de la ruta
+    cur.execute("SELECT idRuta FROM rutas WHERE titulo = %s AND cfUsuario = %s", (ruta, usuario))
+    idRuta = cur.fetchone()[0]
+
+    print(idRuta)
+
+    try: 
+        # Insertar la valoración en la base de datos
+        cur.execute("""INSERT INTO valoraciones (comentario, valoracion, cfRuta, cfUsuario) 
+                VALUES (%s, %s, %s, %s)""",
+                (mJson['comentario'], mJson['puntuacion'], idRuta, idUsuario))
+        conex.connection.commit()
+
+        return respuesta({ 'estado': EST_OK, 'mensaje': ("OK") })
+
     except:
-        return jsonify({'mensaje': 'NO'})
+            return respuesta({ 'estado': EST_OK, 'mensaje': ("Error al registrar") })
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA VER COMENTARIOS
+@app.route(f"/{URL}/ruta/comments")
+def listComments():
+    if (request.args.get("ruta")==None): # se necesita este argumento para la consulta
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: ruta") })
+    
+    ruta = request.args.get("ruta")
+
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    cur.execute("SELECT idRuta FROM rutas WHERE titulo = %s;", (ruta, ))
+    cfRuta = cur.fetchone()[0]
+    
+    cur.execute("""SELECT idValoracion, valoracion, comentario, cfRuta, v.cfUsuario
+               FROM valoraciones v
+               JOIN rutas r ON r.idRuta = cfRuta
+               WHERE cfRuta = %s;""", (cfRuta, ))
+    res = cur.fetchall()
+
+    comentarios = []
+    for elem in res:
+        cfUsuario = elem[4]
+        cur.execute("SELECT usuario FROM usuarios WHERE idUsuario=%s", (cfUsuario, ))
+        usuario = cur.fetchone()[0]
+
+        comentario = {
+            'idValoracion': elem[0],
+            'valoracion': elem[1],
+            'comentario': elem[2],
+            'cfRuta': elem[3],
+            'cfUsuario': cfUsuario,
+            'usuario': usuario
+        }
+
+        comentarios.append(comentario)
+
+    cur.close()
+    return jsonify(comentarios)
+    
+
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA SEGUIR CUENTAS
+@app.route(f"/{URL}/seguir", methods=["POST"])
+def seguir():
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"JSON requerido") })
+    
+    cfCuenta1 = mJson.get('cfCuenta1')
+    cfCuenta2 = mJson.get('cfCuenta2')
+
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': "Problema al conectar a la BD" })
+    
+    # Obtenemos el id del usuario al que vamos a seugir
+    cur.execute('SELECT idUsuario FROM usuarios WHERE usuario = %s', (cfCuenta2, ))
+    idCuenta2 = cur.fetchone()[0]
+
+    try:
+        # Consulta que nos devuelve el contador de seguidos del usuario
+        cur.execute("SELECT nSeguidos, nSeguidores FROM usuarios WHERE idUsuario = %s", (cfCuenta1, ))
+        res1 = cur.fetchone()
+        if res1 is not None:
+            nSeguidos = res1[0]
+            nSeguidores = res1[1]
+        else:
+            nSeguidos = 0  # Asignamos 0 como valor predeterminado
+            nSeguidores = 0 # Asignamos 0 como valor predeterminado
+
+        # Verificamos si ya existe una relación de seguimiento entre los usuarios
+        cur.execute('SELECT * FROM seguidos WHERE cfCuenta1 = %s AND cfCuenta2 = %s', (cfCuenta1, idCuenta2))
+        existe_seguimiento = cur.fetchone() is not None
+
+        if existe_seguimiento:
+            # Si ya se siguen, eliminamos el seguimiento
+            cur.execute('DELETE FROM seguidos WHERE cfCuenta1 = %s AND cfCuenta2 = %s', (cfCuenta1, idCuenta2))
+            if nSeguidos > 0:
+                nSeguidos -= 1
+            if nSeguidores > 0:
+                nSeguidores -= 1
+            cur.execute('UPDATE usuarios SET nSeguidos = %s WHERE idUsuario = %s', (nSeguidos, cfCuenta1))
+            cur.execute('UPDATE usuarios SET nSeguidores = %s WHERE idUsuario = %s', (nSeguidores, idCuenta2))
+            conex.connection.commit()
+
+            mensaje_respuesta = 'Dejaste de seguir al usuario'
+
+        else:
+            # Si no se siguen aun, creamos el seguimiento
+            cur.execute('INSERT INTO seguidos (cfCuenta1, cfCuenta2) VALUES (%s, %s)', (cfCuenta1, idCuenta2))
+            nSeguidos += 1
+            nSeguidores += 1
+            cur.execute('UPDATE usuarios SET nSeguidos = %s WHERE idUsuario = %s', (nSeguidos, cfCuenta1))
+            cur.execute('UPDATE usuarios SET nSeguidores = %s WHERE idUsuario = %s', (nSeguidores, idCuenta2))
+            conex.connection.commit()
+
+            mensaje_respuesta = 'Has seguido al usuario'
+
+        return respuesta({ 'estado': EST_OK, 'mensaje': mensaje_respuesta })
+    except:
+        return respuesta({ 'estado': ERR_OTHER, 'mensaje': 'ERROR al seguir' })
+
+@app.route(f"/{URL}/seguido")
+def compSeguido():
+    cfCuenta1 = request.args.get('cfCuenta1')
+    cfCuenta2 = request.args.get('cfCuenta2')
+
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({
+            'estado': ERR_NO_CONNECT_BD,
+            'mensaje': "Problema al conectar a la BD"
+        })
+    
+    cur.execute('SELECT idUsuario FROM usuarios WHERE usuario = %s',(cfCuenta2, )) 
+    idCuenta2 = cur.fetchone()[0]
+
+
+    cur.execute('SELECT * FROM seguidos WHERE cfCuenta1 = %s AND cfCuenta2 = %s', (cfCuenta1, idCuenta2))
+    resultado = cur.fetchone()
+    if resultado:
+        siguiendo = True
+    else:
+        siguiendo = False
+
+    return respuesta({
+        'estado': EST_OK,
+        'mensaje': "Estado siguiendo obtenido correctamente",
+        'siguiendo': siguiendo
+    })
+
 
 # # # # # FUNCIÓN PAG NO ENCONTRADA # # # # #
 def paginaNoEncontrada(error):
