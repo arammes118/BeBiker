@@ -93,11 +93,11 @@ const Subir = () => {
             method: "POST",
             json: {
                 descripcion: rDescripcion.current.value,
-                foto: image,
+                foto: rFoto.target.files[0],
                 idUsuario: perfil_id
             }
         })
-        console.log(image)
+        console.log(rFoto)
 
         if (pet) {
             setErrorSubida("ERROR al subir la publicación")
