@@ -90,6 +90,8 @@ export const Perfil = () => {
     useEffect(() => {
         async function ver() {
             const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
+            const imagen = (pet.foto)
+            console.log(imagen)
             setList(pet)
         }
         ver()
@@ -144,7 +146,7 @@ export const Perfil = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                image={chema}
+                                image={elem.foto}
                             />
                             <CardActions disableSpacing>
                                 <IconButton

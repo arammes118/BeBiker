@@ -1,4 +1,5 @@
 # Importamos Flask
+import os
 from flask import Flask, request, jsonify
 
 # Importamos MySQL de Flask
@@ -332,7 +333,8 @@ def list():
         }
 
         # Obtener el contenido de la imagen y convertirlo a base64
-        with open('imagen.png', 'rb') as file:
+        foto_path = os.path.join('publicaciones', f'{elem[4]}_{elem[1]}.png')
+        with open(foto_path, 'rb') as file:
             foto_bytes = file.read()
             foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
 
@@ -361,8 +363,14 @@ def ins():
     # Decodificar la imagen base64 a bytes
     foto_bytes = base64.b64decode(foto_base64)
 
-    # Guardar la imagen en un archivo
-    with open('imagen.png', 'wb') as file:
+    # Obtener el nombre del archivo basado en el idUsuario y la descripción
+    nombre_archivo = f"{idUsuario}_{mJson['descripcion']}.png"
+
+    # Ruta completa del archivo
+    ruta_archivo = os.path.join('publicaciones', nombre_archivo)
+
+    # Guardar la imagen en un archivo en la carpeta "publicaciones"
+    with open(ruta_archivo, 'wb') as file:
         file.write(foto_bytes)
 
     # Creamos un cursor para la consulta
@@ -411,7 +419,7 @@ def listP():
     except:
         return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, cfUsuario
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, foto, cfUsuario
                FROM publicaciones
                JOIN usuarios u ON u.idUsuario = cfUsuario
                WHERE cfUsuario = %s;""", (id,))
@@ -423,10 +431,18 @@ def listP():
             'idPublicacion': elem[0],
             'descripcion': elem[1],
             'usuario': elem[2],
-            'cfUsuario': elem[3]
+            'foto': '',
+            'cfUsuario': elem[4]
         }
 
+        # Obtener el contenido de la imagen y convertirlo a base64
+        with open('imagen.png', 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        publicacion['foto'] = foto_base64
         publicaciones.append(publicacion)
+
     cur.close()
     return jsonify(publicaciones)
 

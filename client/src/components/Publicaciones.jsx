@@ -32,12 +32,40 @@ export const Publicaciones = () => {
     // Estados
     const [List, setList] = useState([]) //listado de publicaciones
 
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21);
+        return "data:image/jpeg;base64," + trimmedBase64Image;
+    };
+
     // UseEffect
     useEffect(() => {
         async function listar() {
             const pet = await peticion("/publicaciones") // Peticion de publicaciones
             /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
             que inicia sesión */
+            const filtroPosts = pet.filter(publicacion => {
+                return publicacion.cfUsuario !== perfil_id
+            });
+            const updatedList = filtroPosts.map(publicacion => {
+                const imageObject = handleBase64Image(publicacion.foto) // Convertir la imagen en base64 a un objeto de imagen
+                console.log(imageObject)
+                return {
+                    ...publicacion,
+                    active: false,
+                    foto: imageObject // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
+                }
+            });
+            setList(updatedList)
+        }
+
+        listar()
+    }, [perfil_id, peticion])
+
+    /*useEffect(() => {
+        async function listar() {
+            const pet = await peticion("/publicaciones") // Peticion de publicaciones
+            /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
+            que inicia sesión 
             const filtroPosts = pet.filter(publicacion => {
                 return publicacion.cfUsuario !== perfil_id
             });
@@ -49,7 +77,7 @@ export const Publicaciones = () => {
         }
 
         listar()
-    }, [perfil_id, peticion])
+    }, [perfil_id, peticion])*/
 
     return (
         <>
@@ -70,7 +98,7 @@ export const Publicaciones = () => {
                             component="img"
                             width="100%"
                             height="100%"
-                            image={elem.foto}
+                            src={elem.foto}
                         />
                         <CardActions disableSpacing>
                             <IconButton
