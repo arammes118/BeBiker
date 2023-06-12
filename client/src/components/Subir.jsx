@@ -52,13 +52,16 @@ const Subir = () => {
         if (selectedImage) {
             const reader = new FileReader()
             reader.onload = (e) => {
+                const base64Image = e.target.result
+                setImagen(base64Image)
                 setPreviewImage(e.target.result)
-            };
+            }
             reader.readAsDataURL(selectedImage)
         } else {
             setPreviewImage('')
+            setImagen('')
         }
-    };
+    }
 
     //REFs
     const rDescripcion = useRef()

@@ -9,9 +9,9 @@ export const Header = () => {
             <div className="logo">
                 <img src={logo} alt="BeBiker" />
             </div>
-            <div className="search-bar">
+            {/*<div className="search-bar">
                 <input type="text" placeholder="Busca un usuario" />
-            </div>
+            </div>*/}
         </div>
     )
 

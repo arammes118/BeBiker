@@ -4,13 +4,7 @@ from flask import Flask, request, jsonify
 # Importamos MySQL de Flask
 from flask_mysqldb import MySQL
 
-from werkzeug.utils import secure_filename
-
-import os
-
-import smtplib
-import random
-import string
+import base64
 
 
 #Importamos fichero con funciones de ayuda
@@ -321,7 +315,7 @@ def list():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, cfUsuario
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, foto, cfUsuario
                 FROM publicaciones p
                 JOIN usuarios u ON p.cfUsuario = u.idUsuario
                 """)
@@ -333,24 +327,23 @@ def list():
             'idPublicacion': elem[0],
             'descripcion': elem[1],
             'usuario': elem[2],
-            'cfUsuario': elem[3]
+            'foto': '',
+            'cfUsuario': elem[4]
         }
 
+        # Obtener el contenido de la imagen y convertirlo a base64
+        with open('imagen.png', 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        publicacion['foto'] = foto_base64
         publicaciones.append(publicacion)
+
     cur.close()
     return jsonify(publicaciones)
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA INSERTAR PUBLICACION
-
-app.config["UPLOAD_FOLDER"] = "../client/src/assets/publicaciones"
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 @app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
 def ins():
     # JSON con los datos
@@ -363,6 +356,14 @@ def ins():
         return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: descripcion") })
 
     idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
+    foto_base64 = mJson.get('foto')
+
+    # Decodificar la imagen base64 a bytes
+    foto_bytes = base64.b64decode(foto_base64)
+
+    # Guardar la imagen en un archivo
+    with open('imagen.png', 'wb') as file:
+        file.write(foto_bytes)
 
     # Creamos un cursor para la consulta
     try:

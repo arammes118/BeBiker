@@ -70,7 +70,7 @@ export const Publicaciones = () => {
                             component="img"
                             width="100%"
                             height="100%"
-                            image={fer}
+                            image={elem.foto}
                         />
                         <CardActions disableSpacing>
                             <IconButton
