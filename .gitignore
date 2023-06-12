@@ -1,4 +1,3 @@
 virt/
 *.pyc
-config.json
-/api/asset/json.py
+*.docx

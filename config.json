@@ -1,0 +1,19 @@
+{
+	"api":{
+		"host": "localhost",
+		"port": 5000,
+		"app": "BeBiker", 
+		"version": "v1", 
+		"secretJWT":"17DGTCdCqFeUV6dNCcOyANjQSAZBhxkg51Bk0jlnkuDRYaVczCv7sTR5XW0EKHB",
+		"expToken":1800,
+		"renToken":60,
+		"debug":true
+	},
+	"db":{
+		"host":"localhost",
+		"port":"3306",
+		"user":"root",
+		"psw":"stallman",
+		"db":"BeBiker"
+	}
+}

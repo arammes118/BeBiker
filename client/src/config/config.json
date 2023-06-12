@@ -1,0 +1,9 @@
+{
+	"conexBack":{
+		"host": "http://localhost",
+		"port": 5000,
+		"version":"v1",
+		"app":"BeBiker"
+	},
+	"DebugMode":true
+}
