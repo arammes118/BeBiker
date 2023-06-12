@@ -20,6 +20,7 @@ import { Perfil } from './components/Perfil';
 import Rutas from './components/Rutas';
 import { Perfiles } from './components/Perfiles';
 import { Ruta } from './components/Ruta';
+import { Comentarios } from './components/Comentarios';
 
 function App() {
   // Utilizamos el contexto para obtener el token del usuario
@@ -56,6 +57,7 @@ function App() {
           <Route path='/' element={<MenuLateral />} >
             <Route index element={<Publicaciones />} />
             <Route path='/publicaciones' element={<Publicaciones />} />
+            <Route path='/comentarios/:idPost' element={<Comentarios />} />
             <Route path='/subir' element={<Subir />} />
             <Route path='/rutas' element={<Rutas />} />
             <Route path='/ruta/:tituloRuta/:userId' element={<Ruta />} />
