@@ -39,11 +39,12 @@ export const Perfil = () => {
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
+    const [Imagen, setImagen] = useState(null)
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
-    const [PostSelect, setPostSelect] = useState(null) // Estado que almacena el post que se ha seleccionado
 
     const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
 
+    // Controla el menu desplegable de la foto
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
     }
@@ -60,9 +61,8 @@ export const Perfil = () => {
                 id: id
             }
         })
-        if (pet.estado)
-            return
-
+        console.log(pet)
+        window.location.reload() // Recargamos la página
     }
 
     //UseEffect que muestra el perfil del usuario
@@ -144,7 +144,7 @@ export const Perfil = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                image={logo}
+                                image={chema}
                             />
                             <CardActions disableSpacing>
                                 <IconButton
@@ -173,5 +173,4 @@ export const Perfil = () => {
             </div>
         </>
     )
-
 }
