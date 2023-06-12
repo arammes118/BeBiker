@@ -436,7 +436,8 @@ def listP():
         }
 
         # Obtener el contenido de la imagen y convertirlo a base64
-        with open('imagen.png', 'rb') as file:
+        foto_path = os.path.join('publicaciones', f'{elem[4]}_{elem[1]}.png')
+        with open(foto_path, 'rb') as file:
             foto_bytes = file.read()
             foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
 

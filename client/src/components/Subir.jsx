@@ -86,7 +86,7 @@ const Subir = () => {
             }
         })
 
-        if (!pet) {
+        if (pet) {
             setErrorSubida("ERROR al subir la publicación")
         } else {
             setOkSubida("Publicación añadida con éxito")
@@ -119,7 +119,7 @@ const Subir = () => {
                 }
 
             })
-            if (!pet) {
+            if (pet) {
                 setErrorSubida("ERROR al subir la publicación")
             } else {
                 setOkSubida("Publicación añadida con éxito")
@@ -155,7 +155,7 @@ const Subir = () => {
                                     type="file"
                                     id="image"
                                     name="image"
-                                    accept="image/*"
+                                    accept="image/jpg"
                                     required
                                     onChange={handleImageChange}
                                     ref={rFoto} />

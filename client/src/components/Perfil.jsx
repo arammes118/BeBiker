@@ -2,22 +2,17 @@
 import React, { useContext, useEffect, useState } from 'react'
 
 // CARD POST MATERIAL UI
-import { styled } from '@mui/material/styles'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import Collapse from '@mui/material/Collapse'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import FavoriteIcon from '@mui/icons-material/Favorite'
 import ShareIcon from '@mui/icons-material/Share'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box, Menu, MenuItem } from '@mui/material'
-import { Header } from './comun/Header'
 
 //CSS
 import '../assets/css/perfil.css'
@@ -28,6 +23,7 @@ import chema from '../assets/img/chema.jpg'
 
 // Contexto
 import ConexContext from '../context/ConexContext'
+import { Link } from 'react-router-dom'
 
 export const Perfil = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
@@ -39,7 +35,6 @@ export const Perfil = () => {
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
-    const [Imagen, setImagen] = useState(null)
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
 
     const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
@@ -86,14 +81,26 @@ export const Perfil = () => {
         ver()
     }, [Apellido, Nombre, perfil_id, peticion])
 
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
+
     //UseEffect que muestra las publicaciones de ese usuario
     useEffect(() => {
         async function ver() {
-            const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
-            const imagen = (pet.foto)
-            console.log(imagen)
-            setList(pet)
+            const pet = await peticion('/publicaciones/ver?id=' + perfil_id);
+            const listaActualizada = await Promise.all(pet.map(async (publicacion) => {
+                const imageObject = handleBase64Image(publicacion.foto); // Convertimos la imagen en base64 a un objeto de imagen
+                console.log(imageObject);
+                return {
+                    ...publicacion,
+                    foto: imageObject // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
+                }
+            }))
+            setList(listaActualizada)
         }
+
         ver()
     }, [perfil_id, peticion])
 
@@ -146,7 +153,7 @@ export const Perfil = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                image={elem.foto}
+                                src={elem.foto}
                             />
                             <CardActions disableSpacing>
                                 <IconButton
@@ -168,6 +175,9 @@ export const Perfil = () => {
                                         {elem.descripcion}
                                     </Typography>
                                 </Box>
+                                <Link to={`/comentarios/${elem.idPublicacion}`}>
+                                    <button className='btnVerVal'>Ver comentarios</button>
+                                </Link>
                             </CardContent>
                         </Card>
                     ))}

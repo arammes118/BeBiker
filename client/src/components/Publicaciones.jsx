@@ -33,9 +33,9 @@ export const Publicaciones = () => {
     const [List, setList] = useState([]) //listado de publicaciones
 
     const handleBase64Image = (base64Image) => {
-        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21);
-        return "data:image/jpeg;base64," + trimmedBase64Image;
-    };
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
 
     // UseEffect
     useEffect(() => {
@@ -45,39 +45,20 @@ export const Publicaciones = () => {
             que inicia sesión */
             const filtroPosts = pet.filter(publicacion => {
                 return publicacion.cfUsuario !== perfil_id
-            });
+            })
             const updatedList = filtroPosts.map(publicacion => {
                 const imageObject = handleBase64Image(publicacion.foto) // Convertir la imagen en base64 a un objeto de imagen
                 console.log(imageObject)
                 return {
                     ...publicacion,
-                    active: false,
                     foto: imageObject // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
                 }
-            });
+            })
             setList(updatedList)
         }
 
         listar()
     }, [perfil_id, peticion])
-
-    /*useEffect(() => {
-        async function listar() {
-            const pet = await peticion("/publicaciones") // Peticion de publicaciones
-            /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
-            que inicia sesión 
-            const filtroPosts = pet.filter(publicacion => {
-                return publicacion.cfUsuario !== perfil_id
-            });
-            const updatedList = filtroPosts.map(publicacion => ({
-                ...publicacion,
-                active: false
-            }));
-            setList(updatedList)
-        }
-
-        listar()
-    }, [perfil_id, peticion])*/
 
     return (
         <>
