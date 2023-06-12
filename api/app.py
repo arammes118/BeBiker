@@ -353,48 +353,46 @@ def allowed_file(filename):
 
 @app.route(f"/{URL}/publicaciones/ins", methods=['POST'])
 def ins():
-    if 'image' not in request.files:
-        resp = jsonify({
-            'status' : False,
-            'message' : 'Image is not defined'})
-        resp.status_code = 400
-        return resp
-
-    files = request.files.getlist('foto')
-
-    errors = {}
-    success = False
-
-    for photo in files:
-
-        if photo and allowed_file(photo.filename):
-            filename = secure_filename(photo.filename)
-            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            success = True
-        else:
-            errors[photo.filename] = 'Image type is not allowed'
-
-    if success and errors:
-        errors['message'] = jsonify({
-            'data' : photo.filename,
-            'status' : True,
-            'message' : 'Image(s) successfully uploaded'})
-        resp = jsonify(errors)
-        resp.status_code = 500
-        return resp
-
-    if success:
-        resp = jsonify({
-            'data' : photo.filename,
-            'status' : True,
-            'message' : 'Images successfully uploaded'})
-        resp.status_code = 201
-        return resp
-    else:
-        resp = jsonify(errors)
-        resp.status_code = 500
-        return resp
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"JSON requerido") })
     
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('descripcion' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: descripcion") })
+
+    idUsuario = mJson.get('idUsuario')  # Accede al valor de idUsuario
+
+    # Creamos un cursor para la consulta
+    try:
+        cursor = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    # Consulta que nos devuelve el contador de post del usuario
+    cursor.execute("SELECT nPost FROM usuarios WHERE idUsuario = %s", [idUsuario])
+    res1 = cursor.fetchone()
+    nPost = res1[0]
+    
+    try:
+        # Consulta SQL
+        cursor.execute("""INSERT INTO publicaciones (descripcion, foto, cfUsuario) 
+                VALUES ('{0}', '{1}', '{2}')"""
+                .format(mJson['descripcion'], mJson['foto'], idUsuario))
+        conex.connection.commit() # Confirma la accion de inserción
+
+        # Incrementar el contador de posts del usuario
+        nPost += 1
+
+        # Actualizar el contador en la base de datos
+        cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
+        conex.connection.commit()
+
+        return respuesta({ 'estado': EST_OK, 'mensaje': ("OK") })
+    except:
+        return respuesta({ 'estado': ERR_OTHER, 'mensaje': ("Error al insertar") })
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PUBLICACIONES POR ID
 @app.route(f"/{URL}/publicaciones/ver")
@@ -434,64 +432,120 @@ def listP():
 # # # # # # # # END-POINT # # # # # # # #
 # METODO BORRAR PUBLICACION
 @app.route(f'/{URL}/publicaciones/del', methods=['POST'])
-def bor2():
+def borPost():
     mJson = request.json #JSON
     if (mJson==None): # se necesita este argumento para la consulta
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"JSON requerido")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"JSON requerido") })
         
     if ('id' not in mJson): # se necesita este argumento para la consulta
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje':(f"Argumentos requeridos: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
         
     try:
         id = int(mJson['id'])
     except:
-        return respuesta({
-            'estado': ERR_PARAM_ERR,
-            'mensaje':(f"Argumentos con formato erróneo: id")
-        })
+        return respuesta({ 'estado': ERR_PARAM_ERR, 'mensaje':(f"Argumentos con formato erróneo: id") })
     
     # Creamos un cursor para la consulta
     try:
-        cursor = conex.connection.cursor()
+        cur = conex.connection.cursor()
     except:
-        return respuesta({
-            'estado': ERR_NO_CONNECT_BD,
-            'mensaje': (f"Problema al conectar a la BD")
-        })
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
     # Obtenemos el ID del usuario a través de la clave foránea
-    cursor.execute(f"SELECT cfUsuario FROM publicaciones WHERE idPublicacion = {id}")
-    res1 = cursor.fetchone()
-    idUsuario = res1[0]
+    cur.execute(f"SELECT cfUsuario FROM publicaciones WHERE idPublicacion = {id}")
+    idUsuario = cur.fetchone()[0]
 
     # Obtener el valor actual de nPost del usuario
-    cursor.execute(f"SELECT nPost FROM usuarios WHERE idUsuario = {idUsuario}")
-    res2 = cursor.fetchone()
+    cur.execute(f"SELECT nPost FROM usuarios WHERE idUsuario = {idUsuario}")
+    res2 = cur.fetchone()
     nPost = res2[0]
     print(idUsuario)
     print(nPost)
     
     try:
         # Eliminamos la publicación
-        cursor.execute(f"DELETE FROM publicaciones WHERE idPublicacion = {id}")
+        cur.execute(f"DELETE FROM publicaciones WHERE idPublicacion = {id}")
 
         # Decrementamos el contador de posts del usuario
         nPost -= 1
 
         # Actualizamos el contador de publicaciones del usuario
-        cursor.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
+        cur.execute("UPDATE usuarios SET nPost = %s WHERE idUsuario = %s", (nPost, idUsuario))
         conex.connection.commit()
 
-        cursor.close()
-        return jsonify({'mensaje': 'OK'})
+        cur.close()
+        return respuesta({ 'estado': EST_OK, 'mensaje': ("OK") })
     except:
-        return jsonify({'mensaje': 'NO'})
+        return respuesta({ 'estado': ERR_OTHER, 'mensaje': ("Error al borrar") })
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA INSERTAR VALORACIÓN
+@app.route(f"/{URL}/comentarios/ins", methods=["POST"])
+def insComentario():
+    # JSON con los datos
+    mJson = request.json
+    if (mJson == None):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"JSON requerido") })
+    
+    # Comprobamos que se le pasan los datos necesarios en el JSON
+    if ('comentario' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: comentario") })
+    if ('idUsuario' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: idUsuario") })    
+    if ('idPost' not in mJson):
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: idPost") })
+
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': "Problema al conectar a la BD" })
+
+    try: 
+        # Insertar la valoración en la base de datos
+        cur.execute("""INSERT INTO comentarios (comentario, cfUsuario, cfPost) 
+                VALUES (%s, %s, %s)""",
+                (mJson['comentario'], mJson['idUsuario'], mJson['idPost']))
+        conex.connection.commit()
+
+        return respuesta({ 'estado': EST_OK, 'mensaje': ("OK") })
+
+    except:
+            return respuesta({ 'estado': EST_OK, 'mensaje': ("Error al añadir el comentario") })
+
+# # # # # # # # END-POINT # # # # # # # #
+# COMENTARIOS PUBLICACION
+@app.route(f'/{URL}/comentarios/ver')
+def listComentariosPosts():
+    if (request.args.get("id")==None): # se necesita este argumento para la consulta
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
+    
+    id = int(request.args.get("id"))
+
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    cur.execute("""SELECT idComentario, comentario, c.cfUsuario, cfPost, u.usuario
+               FROM comentarios c
+               JOIN usuarios u ON u.idUsuario = cfUsuario
+               WHERE cfPost = %s;""", (id, ))
+    res = cur.fetchall()
+
+    comentarios = []
+    for elem in res:
+        comentario = {
+            'idComentario': elem[0],
+            'comentario': elem[1],
+            'cfUsuario': elem[2],
+            'cfPost': elem[3],
+            'usuario': elem[4]
+        }
+
+        comentarios.append(comentario)
+
+    cur.close()
+    return jsonify(comentarios)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
