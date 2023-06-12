@@ -9,63 +9,43 @@ import ConexContext from '../context/ConexContext'
 import '../assets/css/publicaciones.css'
 import '../assets/css/post.css'
 
-// Logo
+// IMGs
 import logo from '../assets/img/BeBiker.png'
-import chema from '../assets/img/chema.jpg'
 import fer from '../assets/img/fer.jpg'
-import r1 from '../assets/img/r1.jpg'
 
 // CARD POST MATERIAL UI
-import { styled } from '@mui/material/styles'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import Collapse from '@mui/material/Collapse'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import FavoriteIcon from '@mui/icons-material/Favorite'
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import ShareIcon from '@mui/icons-material/Share'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box } from '@mui/material'
 import { Header } from './comun/Header'
 
 export const Publicaciones = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
-    const [active, setActive] = useState(false)
-    const [activePostId, setActivePostId] = useState(null);
-
 
     // Estados
     const [List, setList] = useState([]) //listado de publicaciones
 
-
-    const handleClick = () => {
-        setActive(!active)
-    }
-
-    const handleClickMG = (postId) => {
-        setActivePostId(postId);
-    };
-
-    // UseEffects
+    // UseEffect
     useEffect(() => {
         async function listar() {
             const pet = await peticion("/publicaciones") // Peticion de publicaciones
             /* Filtramos los post obtenidos para devolver los posts que no son del mismo usuario
             que inicia sesión */
             const filtroPosts = pet.filter(publicacion => {
-                return publicacion.cfUsuario !== perfil_id;
+                return publicacion.cfUsuario !== perfil_id
             });
             const updatedList = filtroPosts.map(publicacion => ({
                 ...publicacion,
                 active: false
             }));
-            setList(updatedList);
+            setList(updatedList)
         }
 
         listar()
@@ -80,11 +60,6 @@ export const Publicaciones = () => {
                         <CardHeader
                             avatar={
                                 <Avatar src={logo} />
-                            }
-                            action={
-                                <IconButton aria-label="settings">
-                                    <ShareIcon />
-                                </IconButton>
                             }
                             title={
                                 <Link to={`/perfil/${elem.usuario}`} style={{ textDecoration: 'none' }}>
@@ -127,6 +102,9 @@ export const Publicaciones = () => {
                                     {elem.descripcion}
                                 </Typography>
                             </Box>
+                            <Link to={`/comentarios/${elem.idPublicacion}`}>
+                                <button className='btnVerVal'>Ver comentarios</button>
+                            </Link>
                         </CardContent>
                     </Card>
                 ))}
