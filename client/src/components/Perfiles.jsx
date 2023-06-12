@@ -2,13 +2,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 // CARD POST MATERIAL UI
-import { styled } from '@mui/material/styles'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import Collapse from '@mui/material/Collapse'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
@@ -27,13 +25,14 @@ export const Perfiles = () => {
     const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const { userId } = useParams() // Cogemos el perfil del usuario de los parametros
 
+    const [Id, setId] = useState('') // Estado para almacernar el id del usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
     const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
     const [NombreComp, setNombreComp] = useState('') // Estado para almacenar el nombre completo del usuario
     const [NPost, setNPost] = useState('') // Estado para almacenar la cantidad de post del usuario
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
-    const [siguiendo, setSiguiendo] = useState(false)
+    const [siguiendo, setSiguiendo] = useState(false) // Estado que almacena si ya estas siguiendo a ese usuario
 
     //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
@@ -42,6 +41,7 @@ export const Perfiles = () => {
         async function ver() {
             const pet = await peticion(`/perfil/${userId}`)
             console.log(pet)
+            setId(pet.idUsuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
             setNombreComp(Nombre + ' ' + Apellido)
@@ -54,13 +54,14 @@ export const Perfiles = () => {
     //UseEffect que muestra las publicaciones de ese usuario
     useEffect(() => {
         async function verPosts() {
-            const pet = await peticion('/publicaciones/ver?id=' + perfil_id)
-            setList(pet)
-
+            const pet = await peticion('/publicaciones/ver?id=' + Id)
+            if (Array.isArray(pet)) {
+                setList(pet)
+            }
             console.log(pet)
         }
         verPosts()
-    }, [perfil_id, peticion])
+    }, [Id, peticion])
 
     // Función que nos permite seguir cuentas
     async function seguir(event) {
@@ -135,9 +136,6 @@ export const Perfiles = () => {
                                 >
                                     <FavoriteIcon />
                                 </IconButton>
-                                <IconButton aria-label="share">
-                                    <ShareIcon />
-                                </IconButton>
                             </CardActions>
 
                             <CardContent>
@@ -148,6 +146,7 @@ export const Perfiles = () => {
                                     <Typography variant="body1">
                                         {elem.descripcion}
                                     </Typography>
+                                    <button className='btnVerVal'>Ver valoraciones</button>
                                 </Box>
                             </CardContent>
                         </Card>
