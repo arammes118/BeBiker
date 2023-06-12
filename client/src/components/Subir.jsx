@@ -34,7 +34,7 @@ import '../assets/css/styles.css'
 const Subir = () => {
     //Contexto
     const { peticion, perfil_id } = useContext(ConexContext)
-    const [image, setImage] = useState(null);
+    const [Imagen, setImagen] = useState(null) // Imagen del post
 
     const [ErrSubida, setErrorSubida] = useState('') //Cualquier error en la subida del post
     const [OkSubida, setOkSubida] = useState('') // Subida del post OK
@@ -55,7 +55,7 @@ const Subir = () => {
     const handleImageChange = (e) => {
         const selectedImage = e.target.files[0]
         console.log(selectedImage)
-        setImage(selectedImage)
+        setImagen(selectedImage)
 
         if (selectedImage) {
             const reader = new FileReader()
@@ -79,12 +79,6 @@ const Subir = () => {
     const rPuntoInicio = useRef()
     const rPuntoFin = useRef()
 
-    async function convertImgToBlob(img) {
-        const response = await fetch(img.src);
-        const blob = await response.blob();
-        return blob;
-    }
-
     // Funcion Guardar publicacion
     async function guardarPost(event) {
         event.preventDefault()
@@ -93,13 +87,12 @@ const Subir = () => {
             method: "POST",
             json: {
                 descripcion: rDescripcion.current.value,
-                foto: image,
+                foto: Imagen,
                 idUsuario: perfil_id
             }
         })
-        console.log(image)
 
-        if (pet) {
+        if (!pet) {
             setErrorSubida("ERROR al subir la publicación")
         } else {
             setOkSubida("Publicación añadida con éxito")
