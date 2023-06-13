@@ -1,6 +1,6 @@
 // Importaciones REACT
 import React, { useContext, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 // Importación Contexto
 import ConexContext from '../context/ConexContext'
@@ -8,10 +8,6 @@ import ConexContext from '../context/ConexContext'
 // CSS
 import '../assets/css/publicaciones.css'
 import '../assets/css/post.css'
-
-// IMGs
-import logo from '../assets/img/BeBiker.png'
-import fer from '../assets/img/fer.jpg'
 
 // CARD POST MATERIAL UI
 import Card from '@mui/material/Card'
@@ -48,10 +44,12 @@ export const Publicaciones = () => {
             })
             const updatedList = filtroPosts.map(publicacion => {
                 const imageObject = handleBase64Image(publicacion.foto) // Convertir la imagen en base64 a un objeto de imagen
+                const imagenUsuario = handleBase64Image(publicacion.fotoUsuario)
                 console.log(imageObject)
                 return {
                     ...publicacion,
-                    foto: imageObject // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
+                    foto: imageObject, // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
+                    fotoUsuario: imagenUsuario
                 }
             })
             setList(updatedList)
@@ -68,7 +66,7 @@ export const Publicaciones = () => {
                     <Card key={elem.idPublicacion} style={{ width: '100%', marginBottom: '20px' }}>
                         <CardHeader
                             avatar={
-                                <Avatar src={logo} />
+                                <Avatar src={elem.fotoUsuario} />
                             }
                             title={
                                 <Link to={`/perfil/${elem.usuario}`} style={{ textDecoration: 'none' }}>

@@ -11,7 +11,6 @@ import '../assets/css/post.css'
 
 // Logo
 import ruta from '../assets/img/ruta.jpg'
-import fer from '../assets/img/fer.jpg'
 
 // CARD POST MATERIAL UI
 import Card from '@mui/material/Card'
@@ -28,12 +27,26 @@ export default function Rutas() {
   // Estados
   const [List, setList] = useState([]) //listado de publicaciones
 
+  const handleBase64Image = (base64Image) => {
+    const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+    return "data:image/jpeg;base64," + trimmedBase64Image
+  }
+
   // UseEffects
   useEffect(() => {
     async function listar() {
       const pet = await peticion("/rutas") // Peticion de publicaciones
-      setList(pet)
-      console.log(pet)
+      if (Array.isArray(pet)) {
+        const listaActualizada = await Promise.all(pet.map(async (rutas) => {
+          const imageObject = handleBase64Image(rutas.foto)
+          return {
+            ...rutas,
+            foto: imageObject
+          }
+        }))
+        setList(listaActualizada)
+        console.log(pet)
+      }
     }
 
     listar()
@@ -46,7 +59,7 @@ export default function Rutas() {
         <Card key={elem.idRuta} style={{ width: '100%', marginBottom: '20px', background: '#292929' }}>
           <CardHeader
             avatar={
-              <Avatar src={fer} />
+              <Avatar src={elem.foto} />
             }
             title={
               <span style={{ fontWeight: 'bold', color: 'white' }}>{elem.usuario}</span>
@@ -62,7 +75,7 @@ export default function Rutas() {
           <CardContent>
             <Box display="flex" alignItems="center">
               <div className='actionBtn'>
-              <Link to={`/ruta/${elem.titulo}/${elem.usuario}`}>
+                <Link to={`/ruta/${elem.titulo}/${elem.usuario}`}>
                   <button className='btnRutas'>Más informacion</button>
                 </Link>
                 <Link to={`/perfil/${elem.usuario}`}>

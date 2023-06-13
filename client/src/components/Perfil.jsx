@@ -35,6 +35,7 @@ export const Perfil = () => {
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
+    const [Imagen, setImagen] = useState(null)
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
 
     const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
@@ -76,8 +77,13 @@ export const Perfil = () => {
             setNRutas(pet.nRutas)
             setNSeguidos(pet.nSeguidos)
             setNSeguidores(pet.nSeguidores)
+
+            // Obtener la foto de perfil y convertirla en objeto de imagen
+            const fotoPerfil = handleBase64Image(pet.foto)
+            setImagen(fotoPerfil)
             console.log(pet)
         }
+
         ver()
     }, [Apellido, Nombre, perfil_id, peticion])
 
@@ -91,8 +97,8 @@ export const Perfil = () => {
         async function ver() {
             const pet = await peticion('/publicaciones/ver?id=' + perfil_id);
             const listaActualizada = await Promise.all(pet.map(async (publicacion) => {
-                const imageObject = handleBase64Image(publicacion.foto); // Convertimos la imagen en base64 a un objeto de imagen
-                console.log(imageObject);
+                const imageObject = handleBase64Image(publicacion.foto) // Convertimos la imagen en base64 a un objeto de imagen
+                console.log(imageObject)
                 return {
                     ...publicacion,
                     foto: imageObject // Obtener la URL de la imagen y asignarla a la propiedad 'foto'
@@ -109,7 +115,7 @@ export const Perfil = () => {
             <div className='card'>
                 <div className='lines'></div>
                 <div className='imgBx'>
-                    <img src={chema} alt={'Perfil de ' + Usuario} />
+                    <img src={Imagen} alt={'Perfil de ' + Usuario} />
                 </div>
                 <div className='content'>
                     <div className='details'>
@@ -130,7 +136,7 @@ export const Perfil = () => {
                         <Card key={elem.idPublicacion} style={{ width: '100%', marginBottom: '20px' }}>
                             <CardHeader
                                 avatar={
-                                    <Avatar src={logo} />
+                                    <Avatar src={Imagen} />
                                 }
                                 action={
                                     <div>

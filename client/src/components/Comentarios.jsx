@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import ConexContext from '../context/ConexContext'
 import { Link, useParams } from 'react-router-dom'
 
-import chema from '../assets/img/chema.jpg'
-
 export const Comentarios = () => {
     const { peticion, perfil_id } = useContext(ConexContext)
     const { idPost } = useParams()
@@ -41,12 +39,27 @@ export const Comentarios = () => {
         }
     }
 
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
+
     // UseEffects
     useEffect(() => {
         async function verComments() {
             const pet = await peticion("/comentarios/ver?id=" + idPost)
-            setList(pet)
-            console.log(pet)
+
+            if (Array.isArray(pet)) {
+                const listaActualizada = await Promise.all(pet.map(async (comentario) => {
+                    const imageObject = handleBase64Image(comentario.foto)
+                    return {
+                        ...comentario,
+                        foto: imageObject
+                    }
+                }))
+                setList(listaActualizada)
+                console.log(pet)
+            }
         }
 
         verComments()
@@ -58,7 +71,7 @@ export const Comentarios = () => {
                 {List.map((elem) => (
                     <div key={elem.idComentario} className="comment">
                         <div className="avatar">
-                            <img src={chema} alt="Avatar" />
+                            <img src={elem.foto} alt="Avatar" />
                         </div>
                         <div className="content">
                             <div className="user-info">

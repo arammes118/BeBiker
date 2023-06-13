@@ -21,6 +21,7 @@ export const MenuLateral = () => {
     const [Usuario, setUsuario] = useState('') // Estado para almacenar el nombre de usuario
     const [Nombre, setNombre] = useState('') // Estado para almacenar el nombre del usuario
     const [Apellido, setApellido] = useState('') // Estado para almacenar el apellido del usuario
+    const [Imagen, setImagen] = useState(null) // Estado para almacenar la foto de perfil del usuario
 
     // REFs
     let menuRef = useRef() // Referencia del menú
@@ -37,7 +38,12 @@ export const MenuLateral = () => {
         return () => {
             document.removeEventListener("mousedown", handler);
         }
-    });
+    })
+
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
 
     useEffect(() => {
         async function ver() {
@@ -45,6 +51,10 @@ export const MenuLateral = () => {
             setUsuario(pet.usuario)
             setNombre(pet.nombre)
             setApellido(pet.apellido)
+
+            // Obtener la foto de perfil y convertirla en objeto de imagen
+            const fotoPerfil = handleBase64Image(pet.foto)
+            setImagen(fotoPerfil)
         }
         ver()
     }, [perfil_id, peticion])
@@ -53,7 +63,7 @@ export const MenuLateral = () => {
         <>
             <div className='menu-container' ref={menuRef}>
                 <div className='menu-trigger' onClick={() => { setOpen(!open) }}>
-                    <img src={user} alt={'Perfil de ' + Usuario}></img>
+                    <img src={Imagen} alt={'Perfil de ' + Usuario}></img>
                 </div>
 
                 <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`} >

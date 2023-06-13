@@ -17,22 +17,18 @@ import { Box } from '@mui/material'
 
 //CSS
 import '../assets/css/perfil.css'
-
-
-
-// CSS
 import '../assets/css/styles.css'
 
 const Subir = () => {
-    //Contexto
-    const { peticion, perfil_id } = useContext(ConexContext)
+    const { peticion, perfil_id } = useContext(ConexContext) // Contexto
     const [Imagen, setImagen] = useState(null) // Imagen del post
+    const [ImagenPerfil, setImagenPerfil] = useState(null) // Imagen del perfil
 
     const [ErrSubida, setErrorSubida] = useState('') //Cualquier error en la subida del post
     const [OkSubida, setOkSubida] = useState('') // Subida del post OK
     const [Usuario, setUsuario] = useState('') // Usuario
-    const [previewImage, setPreviewImage] = useState('')
-    const [mostrarFormPost, setMostrarFormPost] = useState(true);
+    const [previewImage, setPreviewImage] = useState('') // Previsualizar imagen antes de subirla
+    const [mostrarFormPost, setMostrarFormPost] = useState(true) // Estado que muestra un formulario u otro
 
     // Handlers para mostrar distintos formularios
     const handleBoton1Click = () => {
@@ -86,7 +82,7 @@ const Subir = () => {
             }
         })
 
-        if (pet) {
+        if (!pet) {
             setErrorSubida("ERROR al subir la publicación")
         } else {
             setOkSubida("Publicación añadida con éxito")
@@ -117,9 +113,9 @@ const Subir = () => {
                     puntoFin: rPuntoFin.current.value,
                     idUsuario: perfil_id
                 }
-
             })
-            if (pet) {
+
+            if (!pet) {
                 setErrorSubida("ERROR al subir la publicación")
             } else {
                 setOkSubida("Publicación añadida con éxito")
@@ -128,10 +124,20 @@ const Subir = () => {
         }
     }
 
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
+
     useEffect(() => {
         async function ver() {
             const pet = await peticion('/perfil/ver?id=' + perfil_id)
             setUsuario(pet.usuario)
+
+            // Obtener la foto de perfil y convertirla en objeto de imagen
+            const fotoPerfil = handleBase64Image(pet.foto)
+            setImagenPerfil(fotoPerfil)
+            console.log(pet)
         }
         ver()
     })
@@ -177,7 +183,7 @@ const Subir = () => {
                                     <Card style={{ width: '400px', marginBottom: '20px' }}>
                                         <CardHeader
                                             avatar={
-                                                <Avatar src={logo} />
+                                                <Avatar src={ImagenPerfil} />
                                             }
                                             title={<span style={{ fontWeight: 'bold' }}>{Usuario}</span>}
                                         />

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 // CARD POST MATERIAL UI
 import Card from '@mui/material/Card'
@@ -11,12 +11,7 @@ import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import FavoriteIcon from '@mui/icons-material/Favorite'
-import ShareIcon from '@mui/icons-material/Share'
 import { Box } from '@mui/material'
-
-// IMGs
-import fer from '../assets/img/fer.jpg'
-import logo from '../assets/img/BeBiker.png'
 
 // Contexto
 import ConexContext from '../context/ConexContext'
@@ -33,6 +28,12 @@ export const Perfiles = () => {
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
     const [siguiendo, setSiguiendo] = useState(false) // Estado que almacena si ya estas siguiendo a ese usuario
+    const [FotoPerfil, setFotoPerfil] = useState(null) // Estado que almacena la foto de perfil del usuario
+
+    const handleBase64Image = (base64Image) => {
+        const trimmedBase64Image = base64Image.substring(base64Image.indexOf(',') + 21)
+        return "data:image/jpeg;base64," + trimmedBase64Image
+    }
 
     //UseEffect que muestra la informacion del perfil del usuario
     useEffect(() => {
@@ -47,7 +48,13 @@ export const Perfiles = () => {
             setNombreComp(Nombre + ' ' + Apellido)
             setNPost(pet.nPost)
             setNRutas(pet.nRutas)
+
+            // Obtener la foto de perfil y convertirla en objeto de imagen
+            const fotoPerfil = handleBase64Image(pet.foto)
+            setFotoPerfil(fotoPerfil)
+            console.log(pet)
         }
+
         ver()
     }, [Apellido, Nombre, userId, peticion])
 
@@ -56,10 +63,18 @@ export const Perfiles = () => {
         async function verPosts() {
             const pet = await peticion('/publicaciones/ver?id=' + Id)
             if (Array.isArray(pet)) {
-                setList(pet)
+                const listaActualizada = await Promise.all(pet.map(async (publicacion) => {
+                    const imageObject = handleBase64Image(publicacion.foto)
+                    return {
+                        ...publicacion,
+                        foto: imageObject
+                    }
+                }))
+                setList(listaActualizada)
+                console.log(pet)
             }
-            console.log(pet)
         }
+
         verPosts()
     }, [Id, peticion])
 
@@ -95,7 +110,7 @@ export const Perfiles = () => {
             <div className='card'>
                 <div className='lines'></div>
                 <div className='imgBx'>
-                    <img src={fer} alt={'Perfil de ' + userId} />
+                    <img src={FotoPerfil} alt={'Perfil de ' + userId} />
                 </div>
                 <div className='content'>
                     <div className='details'>
@@ -119,7 +134,7 @@ export const Perfiles = () => {
                         <Card key={elem.idPublicacion} style={{ width: '100%', marginBottom: '20px' }}>
                             <CardHeader
                                 avatar={
-                                    <Avatar src={logo} />
+                                    <Avatar src={FotoPerfil} />
                                 }
                                 title={<span style={{ fontWeight: 'bold' }}>{userId}</span>}
                             />
@@ -127,7 +142,7 @@ export const Perfiles = () => {
                                 component="img"
                                 width="100%"
                                 height="100%"
-                                image={logo}
+                                image={elem.foto}
                             />
                             <CardActions disableSpacing>
                                 <IconButton
@@ -146,8 +161,10 @@ export const Perfiles = () => {
                                     <Typography variant="body1">
                                         {elem.descripcion}
                                     </Typography>
-                                    <button className='btnVerVal'>Ver valoraciones</button>
                                 </Box>
+                                <Link to={`/comentarios/${elem.idPublicacion}`}>
+                                    <button className='btnVerVal'>Ver comentarios</button>
+                                </Link>
                             </CardContent>
                         </Card>
                     ))}

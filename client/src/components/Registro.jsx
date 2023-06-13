@@ -21,6 +21,7 @@ const Registro = () => {
     const [ErrApellido, setErrorApellido] = useState('') //Cualquier error en el apellido
     const [ErrUsuario, setErrorUsuario] = useState('') //Cualquier error en el usuario
     const [ErrFechaNac, setErrorFechaNac] = useState('') //Cualquier error en la fecha
+    const [Imagen, setImagen] = useState(null) // Imagen del perfil del usuario
 
     //REFs
     const rId = useRef()
@@ -30,11 +31,30 @@ const Registro = () => {
     const rNombre = useRef()
     const rApellido = useRef()
     const rFechaNac = useRef()
+    const rFoto = useRef()
 
     //Contexto que manejara las peticiones a la BD
     const { peticion } = useContext(ConexContext)
 
     const navigate = useNavigate()
+
+    // Handle para seleccionar la foto que inserta el usuario
+    const handleImageChange = (e) => {
+        const selectedImage = e.target.files[0]
+        console.log(selectedImage)
+        setImagen(selectedImage)
+
+        if (selectedImage) {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                const base64Image = e.target.result
+                setImagen(base64Image)
+            }
+            reader.readAsDataURL(selectedImage)
+        } else {
+            setImagen('')
+        }
+    }
 
     // Funcion que registra un usuario
     async function registrar(event) {
@@ -82,7 +102,8 @@ const Registro = () => {
                             nombre: rNombre.current.value.charAt(0).toUpperCase() + rNombre.current.value.slice(1),
                             apellido: rApellido.current.value.charAt(0).toUpperCase() + rApellido.current.value.slice(1),
                             fecha: rFechaNac.current.value,
-                            psw: rPsw.current.value
+                            psw: rPsw.current.value,
+                            foto: Imagen,
                         }
                     })
                     console.log(pet)
@@ -140,6 +161,17 @@ const Registro = () => {
                             ref={rPsw}
                             onChange={() => setErrorPsw('')} />
                         <p className='error'>{ErrPsw}</p>
+                    </div>
+                    <div className='input-group'>
+                        <label htmlFor="image">Foto de perfil</label>
+                        <input
+                            type="file"
+                            id="image"
+                            name="image"
+                            accept="image/jpg"
+                            required
+                            onChange={handleImageChange}
+                            ref={rFoto} />
                     </div>
                     <div className="input-group">
                         <button type="submit" className="btnLogin">Registrarse</button>

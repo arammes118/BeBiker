@@ -15,13 +15,6 @@ from asset.json import *
 # Importamos fichero config
 from config import config
 
-# Importamos los módulos de las diferentes rutas (Blueprint)
-# from routes.publicaciones import publicaciones
-# from routes.rutas import rutas
-# from routes.usuario import perfil
-
-from io import BytesIO
-
 # Creamos la aplicación
 app = Flask(__name__)
 
@@ -34,12 +27,9 @@ URL = f"/{configApi['api']['app']}/{configApi['api']['version']}"
 # Creamos variable con la conexión a la BBDD   
 conex = MySQL(app)
 
-#####################################################################
-#### DIFERENTES ENDPOINT SEPARADOS POR RUTAS
-#####################################################################
-# app.register_blueprint(publicaciones, url_prefix=f"/{URL}/publicaciones") # Ruta publicaciones
-# app.register_blueprint(rutas, url_prefix=f"/{URL}/rutas") # Ruta rutas
-# app.register_blueprint(perfil, url_prefix=f"/{URL}/perfil") # Ruta perfil
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # LOGIN Y REGISTRO # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # END-POINT # # # # # # # #
 # LOGIN USUARIOS
@@ -101,43 +91,37 @@ def registro():
     # JSON con los datos
     mJson = request.json
     if (mJson == None):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"JSON requerido")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"JSON requerido") })
     
     # Comprobamos que se le pasan los datos necesarios en el JSON
     if ('mail' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: mail")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: mail") })
     if ('psw' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: psw")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: psw") })
     if ('usuario' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: usuario")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: usuario") })
     if ('nombre' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: nombre")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: nombre") })
     if ('apellido' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: apellido")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: apellido") })
     if ('fecha' not in mJson):
-        return respuesta({
-            'estado': ERR_PARAM_NEC,
-            'mensaje': (f"Datos requeridos: fecha")
-        })
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Datos requeridos: fecha") })
     
+    foto_base64 = mJson.get('foto')
+
+    # Decodificar la imagen base64 a bytes
+    foto_bytes = base64.b64decode(foto_base64)
+
+    # Obtener el nombre del archivo basado en el idUsuario y la descripción
+    nombre_archivo = f"Perfil_{mJson['usuario']}.png"
+
+    # Ruta completa del archivo
+    ruta_archivo = os.path.join('perfil', nombre_archivo)
+
+    # Guardar la imagen en un archivo en la carpeta "publicaciones"
+    with open(ruta_archivo, 'wb') as file:
+        file.write(foto_bytes)
+
    # Creamos un cursor para la consulta
     try:
         cursor = conex.connection.cursor()
@@ -149,9 +133,9 @@ def registro():
     
     try:
         # Consulta SQL
-        cursor.execute("""INSERT INTO usuarios (mail, psw, usuario, nombre, apellido, fecha) 
-                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')"""
-                       .format(mJson['mail'], mJson['psw'], mJson['usuario'], mJson['nombre'], mJson['apellido'], mJson['fecha']))
+        cursor.execute("""INSERT INTO usuarios (mail, psw, usuario, nombre, apellido, fecha, foto) 
+                        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"""
+                       .format(mJson['mail'], mJson['psw'], mJson['usuario'], mJson['nombre'], mJson['apellido'], mJson['fecha'], mJson['foto']))
         conex.connection.commit() # Confirma la accion de inserción
 
         return jsonify({'mensaje': 'OK'})
@@ -230,6 +214,10 @@ def repUser():
             'res': False
         })
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # PERFILES # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA VER PERFIL POR ID
 @app.route(f"{URL}/perfil/ver", methods=["GET"])
@@ -251,7 +239,7 @@ def list2():
     except:
         return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas, nSeguidos, nSeguidores
+    cur.execute(f"""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas, nSeguidos, nSeguidores, foto
                 FROM usuarios
                 WHERE idUsuario = {id};
                 """)
@@ -267,8 +255,18 @@ def list2():
             'nPost': res[0][5],
             'nRutas': res[0][6],
             'nSeguidos': res[0][7],
-            'nSeguidores': res[0][8]
+            'nSeguidores': res[0][8],
+            'foto': ''
         }
+
+        # Obtener el contenido de la imagen y convertirlo a base64
+        foto_path = os.path.join('perfil', f'Perfil_{res[0][2]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        usuario['foto'] = foto_base64
+
     cur.close()
     return jsonify(usuario)
 
@@ -281,7 +279,7 @@ def list3(usuario):
     except:
         return respuesta({'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute("""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas
+    cur.execute("""SELECT idUsuario, mail, usuario, nombre, apellido, nPost, nRutas, foto
                 FROM usuarios
                 WHERE usuario = %s;
                 """, (usuario,))
@@ -295,8 +293,18 @@ def list3(usuario):
             'nombre': res[0][3],
             'apellido': res[0][4],
             'nPost': res[0][5],
-            'nRutas': res[0][6]
+            'nRutas': res[0][6],
+            'foto': ''
         }
+
+        # Obtener el contenido de la imagen y convertirlo a base64
+        foto_path = os.path.join('perfil', f'Perfil_{res[0][2]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        usuario['foto'] = foto_base64
+
     cur.close()
     return jsonify(usuario)
 
@@ -316,7 +324,7 @@ def list():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, foto, cfUsuario
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, p.foto, cfUsuario, u.foto
                 FROM publicaciones p
                 JOIN usuarios u ON p.cfUsuario = u.idUsuario
                 """)
@@ -329,7 +337,8 @@ def list():
             'descripcion': elem[1],
             'usuario': elem[2],
             'foto': '',
-            'cfUsuario': elem[4]
+            'cfUsuario': elem[4],
+            'fotoUsuario': elem[5]
         }
 
         # Obtener el contenido de la imagen y convertirlo a base64
@@ -338,7 +347,13 @@ def list():
             foto_bytes = file.read()
             foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
 
+        foto_path = os.path.join('perfil', f'Perfil_{elem[2]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64Usuario = base64.b64encode(foto_bytes).decode('utf-8')
+
         publicacion['foto'] = foto_base64
+        publicacion['fotoUsuario'] = foto_base64Usuario
         publicaciones.append(publicacion)
 
     cur.close()
@@ -419,8 +434,8 @@ def listP():
     except:
         return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, foto, cfUsuario
-               FROM publicaciones
+    cur.execute("""SELECT idPublicacion, descripcion, u.usuario, p.foto, cfUsuario
+               FROM publicaciones p
                JOIN usuarios u ON u.idUsuario = cfUsuario
                WHERE cfUsuario = %s;""", (id,))
     res = cur.fetchall()
@@ -496,6 +511,10 @@ def borPost():
     except:
         return respuesta({ 'estado': ERR_OTHER, 'mensaje': ("Error al borrar") })
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # COMENTARIOS # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA INSERTAR VALORACIÓN
 @app.route(f"/{URL}/comentarios/ins", methods=["POST"])
@@ -544,7 +563,7 @@ def listComentariosPosts():
     except:
         return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
     
-    cur.execute("""SELECT idComentario, comentario, c.cfUsuario, cfPost, u.usuario
+    cur.execute("""SELECT idComentario, comentario, c.cfUsuario, cfPost, u.usuario, u.foto
                FROM comentarios c
                JOIN usuarios u ON u.idUsuario = cfUsuario
                WHERE cfPost = %s;""", (id, ))
@@ -557,14 +576,20 @@ def listComentariosPosts():
             'comentario': elem[1],
             'cfUsuario': elem[2],
             'cfPost': elem[3],
-            'usuario': elem[4]
+            'usuario': elem[4],
+            'foto': ''
         }
 
+        foto_path = os.path.join('perfil', f'Perfil_{elem[4]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        comentario['foto'] = foto_base64
         comentarios.append(comentario)
 
     cur.close()
     return jsonify(comentarios)
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # RUTAS # # # # # # # # # # # # # # # # #
@@ -582,7 +607,7 @@ def listRutas():
             'mensaje': (f"Problema al conectar a la BD")
         })
     
-    cur.execute("""SELECT idRuta, titulo, descripcion, puntoInicio, puntoFin, u.usuario AS usuario, cfUsuario
+    cur.execute("""SELECT idRuta, titulo, descripcion, puntoInicio, puntoFin, u.usuario AS usuario, cfUsuario, u.foto
                 FROM rutas r
                 JOIN usuarios u ON r.cfUsuario = u.idUsuario
                 """)
@@ -597,8 +622,16 @@ def listRutas():
             'puntoInicio': elem[3],
             'puntoFin': elem[4],
             'usuario': elem[5],
-            'cfUsuario': elem[6]
+            'cfUsuario': elem[6],
+            'foto': ''
         }
+
+        foto_path = os.path.join('perfil', f'Perfil_{elem[5]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        ruta['foto'] = foto_base64
 
         rutas.append(ruta)
     cur.close()
@@ -802,7 +835,9 @@ def listComments():
     cur.close()
     return jsonify(comentarios)
     
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # SEGUIMIENTO CUENTAS # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # END-POINT # # # # # # # #
 # RUTA SEGUIR CUENTAS
@@ -897,7 +932,6 @@ def compSeguido():
         'mensaje': "Estado siguiendo obtenido correctamente",
         'siguiendo': siguiendo
     })
-
 
 # # # # # FUNCIÓN PAG NO ENCONTRADA # # # # #
 def paginaNoEncontrada(error):

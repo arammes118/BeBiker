@@ -12,7 +12,6 @@ import ConexContext from "./context/ConexContext";
 // Componentes
 import Login from "./components/Login";
 import Registro from './components/Registro';
-import { ResetPass } from "./components/ResetPass";
 import { Publicaciones } from "./components/Publicaciones";
 import Subir from "./components/Subir";
 import { MenuLateral } from "./components/comun/MenuLateral";
@@ -46,7 +45,6 @@ function App() {
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path='/registro' element={<Registro />} />
-          <Route path='/resetpass' element={<ResetPass />} />
         </Routes>
       </BrowserRouter>
     )
