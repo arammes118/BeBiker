@@ -10,16 +10,12 @@ import CardActions from '@mui/material/CardActions'
 import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import ShareIcon from '@mui/icons-material/Share'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { Box, Menu, MenuItem } from '@mui/material'
+import FavoriteIcon from '@mui/icons-material/Favorite'
 
 //CSS
 import '../assets/css/perfil.css'
-
-//IMGs
-import logo from '../assets/img/BeBiker.png'
-import chema from '../assets/img/chema.jpg'
 
 // Contexto
 import ConexContext from '../context/ConexContext'
@@ -35,7 +31,7 @@ export const Perfil = () => {
     const [NRutas, setNRutas] = useState('') // Estado para almacenar la cantidad de rutas del usuario
     const [NSeguidores, setNSeguidores] = useState('') // Estado para almacenar la cantidad de seguidores del usuario
     const [NSeguidos, setNSeguidos] = useState('') // Estado para almacenar la cantidad de seguidos del usuario
-    const [Imagen, setImagen] = useState(null)
+    const [Imagen, setImagen] = useState(null) // Estado que almacena la imagen del usuario
     const [List, setList] = useState([]) // Estado para almacenar un array de publicaciones del usuario
 
     const [anchorEl, setAnchorEl] = useState(null) //Menú desplegable de opciones de publicacion
@@ -166,10 +162,9 @@ export const Perfil = () => {
                                     aria-label="Me gusta"
                                     className='active'
                                 >
+                                    <FavoriteIcon />
                                 </IconButton>
-                                <IconButton aria-label="share">
-                                    <ShareIcon />
-                                </IconButton>
+
                             </CardActions>
 
                             <CardContent>

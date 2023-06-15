@@ -81,31 +81,21 @@ def getJWT(pay):
 def autentificacion():
     token=request.headers.get('authorization')
     if (token==None):# se necesita este argumento 
-        return ({
-            'estado':ERR_TOKEN_REQ, 
-            'mensaje':(f"Token requerido"),
-            'token':''
-        })
+        return ({ 'estado':ERR_TOKEN_REQ, 'mensaje':(f"Token requerido"), 'token':'' })
     try:
         payload=jwt.decode(token, config['api']['secretJWT'], algorithms="HS256")
     except jwt.ExpiredSignatureError:#el jwt ha expirado
-        return ({
-            'estado':ERR_TOKEN_EXP, 
-            'mensaje':(f"Token expirado"),
-            'token':''
-        })
+        return ({ 'estado':ERR_TOKEN_EXP, 'mensaje':(f"Token expirado"), 'token':'' })
 
     except jwt.InvalidTokenError:
-        return ({ 
-            'estado':ERR_TOKEN_INV, 
-            'mensaje':(f"Token inválido"),
-            'token':''
-        })
+        return ({ 'estado':ERR_TOKEN_INV, 'mensaje':(f"Token inválido"), 'token':'' })
+    
     res={
         'estado':EST_OK, 
         'mensaje':"OK",
-        'perfil_id': payload.get('id', False), # Obtenemos el valor de admin desde el payload del token
+        'perfil_id': payload.get('id', False), # Obtenemos el valor del id del usuario
     }
+
     if (round(time.time()) - payload['iat'] > config['api']['renToken']): # Hay que renovar el token
         res['token'] = getJWT(payload)
     return (res)

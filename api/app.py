@@ -7,7 +7,6 @@ from flask_mysqldb import MySQL
 
 import base64
 
-
 #Importamos fichero con funciones de ayuda
 from asset.funciones import *
 from asset.json import *
