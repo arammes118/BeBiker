@@ -20,6 +20,8 @@ import Rutas from './components/Rutas';
 import { Perfiles } from './components/Perfiles';
 import { Ruta } from './components/Ruta';
 import { Comentarios } from './components/Comentarios';
+import { Seguidores } from './components/Seguidores';
+import { Seguidos } from './components/Seguidos';
 
 function App() {
   // Utilizamos el contexto para obtener el token del usuario
@@ -60,6 +62,8 @@ function App() {
             <Route path='/rutas' element={<Rutas />} />
             <Route path='/ruta/:tituloRuta/:userId' element={<Ruta />} />
             <Route path='/perfil' element={<Perfil />} />
+            <Route path='/perfil/seguidores' element={<Seguidores />} />
+            <Route path='/perfil/seguidos' element={<Seguidos />} />
             <Route path="/perfil/:userId" element={<Perfiles />} />
           </Route>
         </Routes>

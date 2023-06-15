@@ -118,8 +118,8 @@ export const Perfil = () => {
                         <h2>{Usuario}<br /><span>{NombreComp}</span></h2>
                         <div className='data'>
                             <h3>{NPost}<br /><span>Publicaciones</span></h3>
-                            <h3>{NSeguidores}<br /><span>Seguidores</span></h3>
-                            <h3>{NSeguidos}<br /><span>Siguiendo</span></h3>
+                            <Link to={'/perfil/seguidores'}><h3>{NSeguidores}<br /><span>Seguidores</span></h3></Link>
+                            <Link to={'/perfil/seguidos'}><h3>{NSeguidos}<br /><span>Siguiendo</span></h3></Link>
                             <h3>{NRutas}<br /><span>Rutas</span></h3>
                         </div>
                     </div>

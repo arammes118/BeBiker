@@ -839,6 +839,96 @@ def listComments():
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # END-POINT # # # # # # # #
+# RUTA VER SEGUIDOS
+@app.route(f"/{URL}/seguidos/ver")
+def listSeguidos():
+    if (request.args.get("id")==None): # se necesita este argumento para la consulta
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
+    
+    try:
+        id = int(request.args.get("id"))
+    except:
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Argumentos con formato erróneo: id") })
+    
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    cur.execute("""SELECT u.idUsuario, u.usuario, u.nombre, u.apellido, u.foto, s.cfCuenta2
+                   FROM usuarios u
+                   JOIN seguidos s ON u.idUsuario = s.cfCuenta2
+                   WHERE s.cfCuenta1 = %s;""", (id,))
+    res = cur.fetchall()
+
+    seguidos = []
+    for elem in res:
+        seguido = {
+            'idUsuario': elem[0],
+            'usuario': elem[1],
+            'nombre': elem[2],
+            'apellido': elem[3],
+            'foto': '',
+        }
+
+        # Obtener el contenido de la imagen y convertirlo a base64
+        foto_path = os.path.join('perfil', f'Perfil_{elem[1]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        seguido['foto'] = foto_base64
+        seguidos.append(seguido)
+
+    cur.close()
+    return jsonify(seguidos)
+
+# # # # # # # # END-POINT # # # # # # # #
+# RUTA VER SEGUIDOS
+@app.route(f"/{URL}/seguidores/ver")
+def listSeguidores():
+    if (request.args.get("id")==None): # se necesita este argumento para la consulta
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje':(f"Argumentos requeridos: id") })
+    
+    try:
+        id = int(request.args.get("id"))
+    except:
+        return respuesta({ 'estado': ERR_PARAM_NEC, 'mensaje': (f"Argumentos con formato erróneo: id") })
+    
+    try:
+        cur = conex.connection.cursor()
+    except:
+        return respuesta({ 'estado': ERR_NO_CONNECT_BD, 'mensaje': (f"Problema al conectar a la BD") })
+    
+    cur.execute("""SELECT u.idUsuario, u.usuario, u.nombre, u.apellido, u.foto, s.cfCuenta1
+                   FROM usuarios u
+                   JOIN seguidos s ON u.idUsuario = s.cfCuenta1
+                   WHERE s.cfCuenta2 = %s;""", (id,))
+    res = cur.fetchall()
+
+    seguidos = []
+    for elem in res:
+        seguido = {
+            'idUsuario': elem[0],
+            'usuario': elem[1],
+            'nombre': elem[2],
+            'apellido': elem[3],
+            'foto': '',
+        }
+
+        # Obtener el contenido de la imagen y convertirlo a base64
+        foto_path = os.path.join('perfil', f'Perfil_{elem[1]}.png')
+        with open(foto_path, 'rb') as file:
+            foto_bytes = file.read()
+            foto_base64 = base64.b64encode(foto_bytes).decode('utf-8')
+
+        seguido['foto'] = foto_base64
+        seguidos.append(seguido)
+
+    cur.close()
+    return jsonify(seguidos)
+
+# # # # # # # # END-POINT # # # # # # # #
 # RUTA SEGUIR CUENTAS
 @app.route(f"/{URL}/seguir", methods=["POST"])
 def seguir():
